@@ -1,6 +1,7 @@
 {
 	"name": "ayacoo/video-validator",
 	"type": "typo3-cms-extension",
+	"version": "1.0.2",
 	"description": "Checks online videos in TYPO3 for availability",
 	"homepage": "https://www.ayacoo.de",
 	"authors": [
