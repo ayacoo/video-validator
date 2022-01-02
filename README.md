@@ -20,6 +20,9 @@ Run the following command within your [Composer][1] based TYPO3 project:
 composer require ayacoo/video-validator
 ```
 
+Do not forget to activate the extension in the extension manager and to update the database once, so that the two new
+fields are added.
+
 ### 2.2 How it works
 
 The extension fetches all files from the sys_file that are linked to this extension based on the extension, e.g.
@@ -71,6 +74,8 @@ going to accept only bugfixes if we can reproduce the issue.
 
 To define a sender for the email, the configuration ```$GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress']```
 from the Install Tool is used.
+
+Because the FluidEmail is used by TYPO3, you can of course also easily overwrite the template for the status email.
 
 ## 4 Developer corner
 

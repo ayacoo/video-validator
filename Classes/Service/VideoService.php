@@ -172,7 +172,7 @@ class VideoService
      *
      * @return AbstractVideoValidatorInterface|null
      */
-    protected function getValidator(): AbstractVideoValidatorInterface|null
+    protected function getValidator(): ?AbstractVideoValidatorInterface
     {
         $validator = null;
         switch ($this->getExtension()) {
