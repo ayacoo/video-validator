@@ -1,0 +1,22 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  Ayacoo\VideoValidator\:
+    resource: '../Classes/*'
+
+  Ayacoo\VideoValidator\Command\ValidatorCommand:
+    tags:
+      - name: 'console.command'
+        command: 'videoValidator:validate'
+        description: 'Video validation of a defined online service (e.g. Youtube)'
+        schedulable: true
+
+  Ayacoo\VideoValidator\Command\ReportCommand:
+    tags:
+      - name: 'console.command'
+        command: 'videoValidator:report'
+        description: 'Send report of video validation for a defined online service (e.g. Youtube)'
+        schedulable: true

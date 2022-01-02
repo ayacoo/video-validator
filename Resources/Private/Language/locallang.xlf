@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+	<file source-language="en" datatype="plaintext" original="EXT:video_validator/Resources/Private/Language/locallang.xlf" date="2022-01-01T09:12:34Z" product-name="core">
+		<header/>
+		<body>
+			<trans-unit id="email.noHits" resname="email.noHits">
+				<source>No hits</source>
+			</trans-unit>
+			<trans-unit id="email.invalidVideos" resname="email.invalidVideos">
+				<source>Invalid videos</source>
+			</trans-unit>
+			<trans-unit id="email.validVideos" resname="email.validVideos">
+				<source>Valid videos</source>
+			</trans-unit>
+			<trans-unit id="email.summary" resname="email.summary">
+				<source><![CDATA[There have been <strong>%s</strong> videos reviewed in the last <strong>%s</strong> days.]]></source>
+			</trans-unit>
+			<trans-unit id="email.videoCounter" resname="email.videoCounter">
+				<source><![CDATA[<u>Invalid videos:</u> <strong>%s</strong><br/><u>Valid videos:</u> <strong>%s</strong>]]></source>
+			</trans-unit>
+
+			<trans-unit id="report.validMailAddress" resname="report.validMailAddress">
+				<source>Please set a valid defaultMailFromAddress in the LocalConfiguration</source>
+			</trans-unit>
+			<trans-unit id="report.status.success" resname="report.status.success">
+				<source>The video status mail was sent</source>
+			</trans-unit>
+			<trans-unit id="report.status.disallowedExtension" resname="report.status.disallowedExtension">
+				<source>This video extension is not allowed</source>
+			</trans-unit>
+
+			<trans-unit id="validation.start" resname="validation.start">
+				<source>Start video validation</source>
+			</trans-unit>
+			<trans-unit id="validation.end" resname="validation.end">
+				<source>End video validation</source>
+			</trans-unit>
+			<trans-unit id="validation.extension.noSupport" resname="validation.extension.noSupport">
+				<source>This extension is not supported'</source>
+			</trans-unit>
+
+			<trans-unit id="videoService.noVideoValidation" resname="videoService.noVideoValidation">
+				<source>Currently no %s videos need to be crawled</source>
+			</trans-unit>
+			<trans-unit id="videoService.noValidatorFound" resname="videoService.noValidatorFound">
+				<source>No validator for %s defined. Please use the ModifyValidatorEvent to set a validator for this extension</source>
+			</trans-unit>
+			<trans-unit id="videoService.status.success" resname="videoService.status.success">
+				<source> is available</source>
+			</trans-unit>
+			<trans-unit id="videoService.status.error" resname="videoService.status.error">
+				<source> is not available</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

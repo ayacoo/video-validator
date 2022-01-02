@@ -1,0 +1,37 @@
+{
+	"name": "ayacoo/video-validator",
+	"type": "typo3-cms-extension",
+	"description": "Checks online videos in TYPO3 for availability",
+	"homepage": "https://www.ayacoo.de",
+	"authors": [
+		{
+			"name": "Guido Schmechel",
+			"role": "Developer"
+		}
+	],
+	"license": [
+		"GPL-2.0-or-later"
+	],
+	"require": {
+		"typo3/cms-core": "^10.4 || ^11"
+	},
+	"autoload": {
+		"psr-4": {
+			"Ayacoo\\VideoValidator\\": "Classes/"
+		}
+	},
+	"replace": {
+		"typo3-ter/video-validator": "self.version"
+	},
+	"config": {
+		"vendor-dir": ".Build/vendor",
+		"bin-dir": ".Build/bin"
+	},
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "video_validator",
+			"cms-package-dir": "{$vendor-dir}/typo3/cms",
+			"web-dir": ".Build/Web"
+		}
+	}
+}

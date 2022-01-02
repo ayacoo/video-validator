@@ -1,0 +1,60 @@
+<f:layout name="SystemEmail"/>
+<f:section name="Title">{headline}</f:section>
+<f:section name="Main">
+    <p>
+        <f:format.raw>
+            <f:format.printf arguments="{1: '{numberOfVideos}', 2: '{days}'}">
+                <f:translate key="email.summary" extensionName="video_validator" />
+            </f:format.printf>
+        </f:format.raw>
+    </p>
+    <p>
+        <f:variable name="numberOfValidVideos">{validVideos->f:count()}</f:variable>
+        <f:variable name="numberOfInvalidVideos">{invalidVideos->f:count()}</f:variable>
+        <f:format.raw>
+            <f:format.printf arguments="{1: '{numberOfInvalidVideos}', 2: '{numberOfValidVideos}'}">
+                <f:translate key="email.videoCounter" extensionName="video_validator" />
+            </f:format.printf>
+        </f:format.raw>
+    </p>
+    <h3><f:translate key="email.invalidVideos" extensionName="video_validator" /></h3>
+    <f:render section="VideoTable" arguments="{videos: invalidVideos}" />
+
+    <h3><f:translate key="email.validVideos" extensionName="video_validator" /></h3>
+    <f:render section="VideoTable" arguments="{videos: validVideos}" />
+
+</f:section>
+
+<f:section name="VideoLink">
+    <li>
+        <a target="_blank" href="{video.publicUrl}">
+            <f:if condition="{video.metadata.title}">
+                <f:then>{video.metadata.title}</f:then>
+                <f:else>File uid: {video.uid}</f:else>
+            </f:if>
+        </a>
+    </li>
+</f:section>
+
+<f:section name="VideoTable">
+    <f:if condition="{videos->f:count()} > 0">
+        <f:then>
+            <table width="100%" style="width: 100%;">
+                <tbody>
+                <tr style="font-size:14px;">
+                    <td>
+                        <ul>
+                            <f:for each="{videos}" as="video">
+                                <f:render section="VideoLink" arguments="{video: video}" />
+                            </f:for>
+                        </ul>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </f:then>
+        <f:else>
+            <p><f:translate key="email.noHits" extensionName="video_validator" /></p>
+        </f:else>
+    </f:if>
+</f:section>
