@@ -133,4 +133,24 @@ class FileRepository
             ->getConnectionForTable($tableName)
             ->createQueryBuilder();
     }
+
+    /**
+     * @param string $extension
+     */
+    public function resetValidationState(string $extension)
+    {
+        $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
+
+        $queryBuilder
+            ->update(self::SYS_FILE_TABLE)
+            ->where(
+                $queryBuilder->expr()->eq(
+                    'extension',
+                    $queryBuilder->createNamedParameter($extension, Connection::PARAM_STR)
+                ),
+            );
+        $queryBuilder->set('validation_date', 0);
+        $queryBuilder->set('validation_status', 0);
+        $queryBuilder->execute();
+    }
 }

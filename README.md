@@ -115,6 +115,20 @@ Example:
 bin/typo3 videoValidator:report 7 receiver@example.com,receiver2@example.com Youtube
 ```
 
+#### videoValidator:reset
+
+Resets all video states of a media extension
+
+```
+bin/typo3 videoValidator:reset extension
+```
+
+Example:
+
+```
+bin/typo3 videoValidator:reset Youtube
+```
+
 ### 4.2 Register your custom validator
 
 This TYPO3 extension is built in such a way that other media extensions can also be checked. For this, the media

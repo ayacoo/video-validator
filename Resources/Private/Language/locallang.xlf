@@ -51,6 +51,13 @@
 			<trans-unit id="videoService.status.error" resname="videoService.status.error">
 				<source> is not available</source>
 			</trans-unit>
+
+			<trans-unit id="reset.start" resname="reset.start">
+				<source>Start resetting video status</source>
+			</trans-unit>
+			<trans-unit id="reset.end" resname="reset.end">
+				<source>End resetting video status</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>
