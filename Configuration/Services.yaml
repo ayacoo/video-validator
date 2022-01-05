@@ -20,3 +20,9 @@ services:
         command: 'videoValidator:report'
         description: 'Send report of video validation for a defined online service (e.g. Youtube)'
         schedulable: true
+  Ayacoo\VideoValidator\Command\ResetCommand:
+    tags:
+      - name: 'console.command'
+        command: 'videoValidator:reset'
+        description: 'Resets all videos of a media extension, e.g. Youtube'
+        schedulable: true
