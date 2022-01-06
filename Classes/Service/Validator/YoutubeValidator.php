@@ -52,6 +52,6 @@ class YoutubeValidator extends AbstractVideoValidator implements AbstractVideoVa
      */
     public function buildUrl(string $mediaId): string
     {
-        return '(https://www.youtube.com/watch?v=' . $mediaId . ')';
+        return 'https://www.youtube.com/watch?v=' . $mediaId;
     }
 }

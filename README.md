@@ -234,7 +234,7 @@ class TiktokValidator extends AbstractVideoValidator implements AbstractVideoVal
      */
     public function buildUrl(string $mediaId): string
     {
-        return '(https://www.tiktok.com/@' . $this->username . '/' . $mediaId . ')';
+        return 'https://www.tiktok.com/@' . $this->username . '/' . $mediaId;
     }
 }
 

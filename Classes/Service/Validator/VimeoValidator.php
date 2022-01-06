@@ -52,6 +52,6 @@ class VimeoValidator extends AbstractVideoValidator implements AbstractVideoVali
      */
     public function buildUrl(string $mediaId): string
     {
-        return '(https://vimeo.com/' . $mediaId . ')';
+        return 'https://vimeo.com/' . $mediaId;
     }
 }

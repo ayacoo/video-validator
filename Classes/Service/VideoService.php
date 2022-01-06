@@ -134,13 +134,13 @@ class VideoService
         } else {
             $this->io->progressStart($numberOfVideos);
             foreach ($videos as $video) {
-                $this->io->newLine(1);
+                $this->io->newLine(2);
 
                 $file = $this->resourceFactory->getFileObject($video['uid']);
                 $mediaId = $validator->getOnlineMediaId($file);
 
                 $title = $file->getProperty('title') ?? '';
-                $message = $this->getExtension() . ' Video ' . $title . $validator->buildUrl($mediaId);
+                $message = $this->getExtension() . ' Video ' . $title;
                 if ($validator->isVideoOnline($mediaId)) {
                     $this->io->success(
                         $message . $this->localizationUtility::translate(
@@ -158,8 +158,18 @@ class VideoService
                     $properties['validation_status'] = self::STATUS_ERROR;
                 }
                 $properties['validation_date'] = time();
-                $this->fileRepository->updatePropertiesByFile($video['uid'], $properties);
 
+                $this->io->table(
+                    [],
+                    [
+                        ['File UID: ' . $video['uid']],
+                        ['Title: ' .  $file->getProperty('title') ?? 'No title'],
+                        ['Identifier: ' . $file->getIdentifier()],
+                        ['URL: ' . $validator->buildUrl($mediaId)]
+                    ]
+                );
+
+                $this->fileRepository->updatePropertiesByFile($video['uid'], $properties);
                 $this->io->progressAdvance(1);
             }
             $this->io->progressFinish();
