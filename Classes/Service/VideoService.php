@@ -140,8 +140,16 @@ class VideoService
                 $mediaId = $validator->getOnlineMediaId($file);
 
                 $title = $file->getProperty('title') ?? '';
-                $message = $this->getExtension() . ' Video ' . $title;
-                if ($validator->isVideoOnline($mediaId)) {
+                $message = $this->getExtension() . ' Video ' . $title ;
+                if (empty($mediaId)) {
+                    $this->io->warning(
+                        $message . $this->localizationUtility::translate(
+                            'videoService.status.noMediaId',
+                            'video_validator'
+                        )
+                    );
+                    $properties['validation_status'] = self::STATUS_ERROR;
+                } elseif ($validator->isVideoOnline($mediaId)) {
                     $this->io->success(
                         $message . $this->localizationUtility::translate(
                             'videoService.status.success',

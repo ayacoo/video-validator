@@ -51,6 +51,9 @@
 			<trans-unit id="videoService.status.error" resname="videoService.status.error">
 				<source> is not available</source>
 			</trans-unit>
+			<trans-unit id="videoService.status.noMediaId" resname="videoService.status.noMediaId">
+				<source> has no media id</source>
+			</trans-unit>
 
 			<trans-unit id="reset.start" resname="reset.start">
 				<source>Start resetting video status</source>
