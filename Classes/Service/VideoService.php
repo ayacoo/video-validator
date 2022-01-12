@@ -35,6 +35,7 @@ class VideoService
 
     private int $limit = 10;
 
+    private bool $referencedOnly = false;
 
     /**
      * @param SymfonyStyle|null $symfonyStyle
@@ -91,6 +92,22 @@ class VideoService
     }
 
     /**
+     * @return bool
+     */
+    public function getReferencedOnly(): bool
+    {
+        return $this->referencedOnly;
+    }
+
+    /**
+     * @param bool $referencedOnly
+     */
+    public function setReferencedOnly(bool $referencedOnly): void
+    {
+        $this->referencedOnly = $referencedOnly;
+    }
+
+    /**
      * @return SymfonyStyle|null
      */
     public function getIo(): ?SymfonyStyle
@@ -114,7 +131,7 @@ class VideoService
     {
         $validator = $this->getValidator();
 
-        $videos = $this->fileRepository->getVideosByExtension($this->getExtension(), 0, $this->getLimit());
+        $videos = $this->fileRepository->getVideosByExtension($this->getExtension(), 0, $this->getLimit(), $this->getReferencedOnly());
         $numberOfVideos = count($videos);
 
         if ($numberOfVideos < 1) {

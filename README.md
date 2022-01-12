@@ -92,7 +92,7 @@ limits.
 Validates a defined number of videos for the defined media extension
 
 ```
-bin/typo3 videoValidator:validate extension limit
+bin/typo3 videoValidator:validate extension limit referencedOnly=0(default)|1
 ```
 
 Example:
@@ -101,12 +101,18 @@ Example:
 bin/typo3 videoValidator:validate Vimeo 10
 ```
 
+Example for fetching only videos that are referenced on visible, non-deleted pages within visible, non-deleted references:
+
+```
+bin/typo3 videoValidator:validate Vimeo 10 1
+```
+
 #### videoValidator:report
 
 Create an email report of Youtube videos from the last 7 days
 
 ```
-bin/typo3 videoValidator:report days receiver extension
+bin/typo3 videoValidator:report days receiver extension referencedOnly=0(default)|1
 ```
 
 Example:
