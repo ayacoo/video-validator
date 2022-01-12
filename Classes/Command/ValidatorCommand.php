@@ -31,6 +31,11 @@ class ValidatorCommand extends Command
             InputArgument::REQUIRED,
             'Number of videos to be checked',
         );
+        $this->addArgument(
+            'referencedOnly',
+            InputArgument::OPTIONAL,
+            'Whether to only fetch records that are referenced on visible pages and content elements (true/false)',
+        );
     }
 
     /**
@@ -69,6 +74,7 @@ class ValidatorCommand extends Command
             $this->videoService->setIo($io);
             $this->videoService->setExtension($extension);
             $this->videoService->setLimit((int)$input->getArgument('limit'));
+            $this->videoService->setReferencedOnly((bool)$input->getArgument('referencedOnly'));
             $this->videoService->validate();
             $io->info(
                 $this->localizationUtility::translate('validation.end', 'video_validator')
