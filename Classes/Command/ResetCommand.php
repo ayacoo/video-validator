@@ -34,7 +34,7 @@ class ResetCommand extends Command
      */
     public function __construct(
         LocalizationUtility $localizationUtility = null,
-        FileRepository      $fileRepository = null,
+        FileRepository      $fileRepository = null
     )
     {
         $this->localizationUtility = $localizationUtility;

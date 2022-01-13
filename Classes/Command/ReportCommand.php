@@ -45,10 +45,19 @@ class ReportCommand extends Command
             InputArgument::REQUIRED,
             'Name of the video extension',
         );
-        $this->addArgument(
+        $this->addOption(
             'referencedOnly',
+            null,
             InputArgument::OPTIONAL,
             'Whether to only fetch records that are referenced on visible pages and content elements (true/false)',
+            false
+        );
+        $this->addOption(
+            'referenceRoot',
+            null,
+            InputArgument::OPTIONAL,
+            'Pagetree root where to search references. Defaults to 0 (all root nodes)',
+            0
         );
     }
 
@@ -83,7 +92,8 @@ class ReportCommand extends Command
         $days = (int)trim($input->getArgument('days')) ?? 7;
         $recipients = GeneralUtility::trimExplode(',', trim($input->getArgument('recipients')));
         $extension = trim($input->getArgument('extension'));
-        $referencedOnly = (bool)$input->getArgument('referencedOnly');
+        $referencedOnly = (bool)$input->getOption('referencedOnly');
+        $referenceRoot = (int)$input->getOption('referenceRoot');
 
         $sender = $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'] ?? '';
         if (empty($sender)) {
@@ -95,7 +105,7 @@ class ReportCommand extends Command
 
         $allowedExtensions = array_keys($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers'] ?? []);
         if (in_array(strtolower($extension), $allowedExtensions, true)) {
-            $this->sendMail($extension, $days, $recipients, $referencedOnly);
+            $this->sendMail($extension, $days, $recipients, $referencedOnly, $referenceRoot);
             $io->info(
                 $this->localizationUtility::translate('report.status.success', 'video_validator')
             );
@@ -111,14 +121,15 @@ class ReportCommand extends Command
     /**
      * @param string $extension
      * @param int $days
-     * @param bool $referencedOnly
-     *
      * @param array $recipients
+     * @param bool $referencedOnly
+     * @param int $referenceRoot
+     * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
      */
-    protected function sendMail(string $extension, int $days, array $recipients, bool $referencedOnly = false): void
+    protected function sendMail(string $extension, int $days, array $recipients, bool $referencedOnly = false, int $referenceRoot = 0): void
     {
-        $invalidVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_ERROR, $referencedOnly);
-        $validVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_SUCCESS, $referencedOnly);
+        $invalidVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_ERROR, $referencedOnly, $referenceRoot);
+        $validVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_SUCCESS, $referencedOnly, $referenceRoot);
 
         $subject = 'TYPO3 ' . $extension . ' validation report';
         $email = GeneralUtility::makeInstance(FluidEmail::class);
@@ -130,6 +141,7 @@ class ReportCommand extends Command
             ->assign('headline', $subject)
             ->assign('days', $days)
             ->assign('referencedOnly', $referencedOnly)
+            ->assign('referenceRoot', $referenceRoot)
             ->assign('numberOfVideos', count($invalidVideos) + count($validVideos))
             ->assign('invalidVideos', $invalidVideos)
             ->assign('validVideos', $validVideos);
@@ -148,13 +160,16 @@ class ReportCommand extends Command
      * @param int $days
      * @param int $status
      * @param bool $referencedOnly
-     *
+     * @param int $referenceRoot
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
      */
-    protected function getVideosByStatus(string $extension, int $days, int $status, bool $referencedOnly): array
+    protected function getVideosByStatus(string $extension, int $days, int $status, bool $referencedOnly, int $referenceRoot): array
     {
         $videos = [];
-        $videoStorage = $this->fileRepository->getVideosForReport($extension, $days, $status, $referencedOnly);
+        $videoStorage = $this->fileRepository->getVideosForReport($extension, $days, $status, $referencedOnly, $referenceRoot);
         foreach ($videoStorage as $video) {
             $file = $this->resourceFactory->getFileObject($video['uid']);
             if ($file) {

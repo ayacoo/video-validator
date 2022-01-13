@@ -25,12 +25,16 @@
 			<trans-unit id="report.status.success" resname="report.status.success">
 				<source>The video status mail was sent</source>
 			</trans-unit>
+
 			<trans-unit id="report.status.disallowedExtension" resname="report.status.disallowedExtension">
 				<source>This video extension is not allowed</source>
 			</trans-unit>
 
 			<trans-unit id="validation.start" resname="validation.start">
-				<source>Start video validation</source>
+				<source>Start video validation (all files)</source>
+			</trans-unit>
+			<trans-unit id="validation.startReferencedOnly" resname="validation.startReferencedOnly">
+				<source>Start video validation (referenced files only)</source>
 			</trans-unit>
 			<trans-unit id="validation.end" resname="validation.end">
 				<source>End video validation</source>
@@ -47,6 +51,9 @@
 			</trans-unit>
 			<trans-unit id="videoService.status.success" resname="videoService.status.success">
 				<source> is available</source>
+			</trans-unit>
+			<trans-unit id="videoService.status.skip" resname="videoService.status.skip">
+				<source> is skipped (no references)</source>
 			</trans-unit>
 			<trans-unit id="videoService.status.error" resname="videoService.status.error">
 				<source> is not available</source>

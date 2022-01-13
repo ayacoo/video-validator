@@ -92,7 +92,7 @@ limits.
 Validates a defined number of videos for the defined media extension
 
 ```
-bin/typo3 videoValidator:validate extension limit referencedOnly=0(default)|1
+bin/typo3 videoValidator:validate extension limit --referencedOnly=0(default)|1 --referenceRoot=0(default)
 ```
 
 Example:
@@ -104,15 +104,19 @@ bin/typo3 videoValidator:validate Vimeo 10
 Example for fetching only videos that are referenced on visible, non-deleted pages within visible, non-deleted references:
 
 ```
-bin/typo3 videoValidator:validate Vimeo 10 1
+bin/typo3 videoValidator:validate Vimeo 10 --referencedOnly=1
 ```
+
+You can specify the `--referenceRoot` option to specify a PageRoot UID where to search for references. `0` by default means all available roots.
+
+Pay attention to using the right upper/lowercase media extension names (`Youtube` instead of `youtube`), which are defined by the name of the Validator instance.
 
 #### videoValidator:report
 
 Create an email report of Youtube videos from the last 7 days
 
 ```
-bin/typo3 videoValidator:report days receiver extension referencedOnly=0(default)|1
+bin/typo3 videoValidator:report days receiver extension --referencedOnly=0(default)|1 --referenceRoot=0(default)
 ```
 
 Example:
@@ -120,6 +124,8 @@ Example:
 ```
 bin/typo3 videoValidator:report 7 receiver@example.com,receiver2@example.com Youtube
 ```
+
+The same `referencedOnly` and `referenceRoot` options like in `videoValidator:validate` are available.
 
 #### videoValidator:reset
 
