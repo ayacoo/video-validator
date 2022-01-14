@@ -89,10 +89,18 @@ class ReportCommand extends Command
 
         $allowedExtensions = array_keys($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers'] ?? []);
         if (in_array(strtolower($extension), $allowedExtensions, true)) {
-            $this->sendMail($extension, $days, $recipients);
-            $io->info(
-                $this->localizationUtility::translate('report.status.success', 'video_validator')
-            );
+            $invalidVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_ERROR);
+            $validVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_SUCCESS);
+            if (count($invalidVideos) > 0 && count($validVideos) > 0) {
+                $this->sendMail($validVideos, $invalidVideos, $extension, $days, $recipients);
+                $io->info(
+                    $this->localizationUtility::translate('report.status.success', 'video_validator')
+                );
+            } else {
+                $io->warning(
+                    $this->localizationUtility::translate('report.status.noVideos', 'video_validator')
+                );
+            }
         } else {
             $io->warning(
                 $this->localizationUtility::translate('report.status.disallowedExtension', 'video_validator')
@@ -103,16 +111,14 @@ class ReportCommand extends Command
     }
 
     /**
+     * @param array $validVideos
+     * @param array $invalidVideos
      * @param string $extension
      * @param int $days
-     *
      * @param array $recipients
      */
-    protected function sendMail(string $extension, int $days, array $recipients): void
+    protected function sendMail(array $validVideos, array $invalidVideos, string $extension, int $days, array $recipients): void
     {
-        $invalidVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_ERROR);
-        $validVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_SUCCESS);
-
         $subject = 'TYPO3 ' . $extension . ' validation report';
         $email = GeneralUtility::makeInstance(FluidEmail::class);
         $email

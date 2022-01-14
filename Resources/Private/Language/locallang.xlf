@@ -25,6 +25,9 @@
 			<trans-unit id="report.status.success" resname="report.status.success">
 				<source>The video status mail was sent</source>
 			</trans-unit>
+			<trans-unit id="report.status.noVideos" resname="report.status.noVideos">
+				<source>No videos found and no report sent</source>
+			</trans-unit>
 			<trans-unit id="report.status.disallowedExtension" resname="report.status.disallowedExtension">
 				<source>This video extension is not allowed</source>
 			</trans-unit>
