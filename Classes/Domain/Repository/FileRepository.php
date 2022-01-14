@@ -38,10 +38,10 @@ class FileRepository
             $queryBuilder->createNamedParameter($validationDate, Connection::PARAM_INT)
         );
 
-        $statement = $queryBuilder
-            ->select('*')
-            ->from(self::SYS_FILE_TABLE)
-            ->setMaxResults($limit);
+        $statement = $queryBuilder->select('*')->from(self::SYS_FILE_TABLE);
+        if ($limit > 0) {
+            $statement->setMaxResults($limit);
+        }
 
         if (!empty($whereConstraints)) {
             $statement->where(

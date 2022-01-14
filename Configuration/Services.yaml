@@ -26,3 +26,9 @@ services:
         command: 'videoValidator:reset'
         description: 'Resets all videos of a media extension, e.g. Youtube'
         schedulable: true
+  Ayacoo\VideoValidator\Command\CountCommand:
+    tags:
+      - name: 'console.command'
+        command: 'videoValidator:count'
+        description: 'Counts all videos of a media extension, e.g. Youtube'
+        schedulable: true
