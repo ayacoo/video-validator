@@ -117,7 +117,7 @@ bin/typo3 videoValidator:report 7 receiver@example.com,receiver2@example.com You
 
 #### videoValidator:reset
 
-Resets all video states of a media extension
+Resets all video states of a media extension.
 
 ```
 bin/typo3 videoValidator:reset extension
@@ -127,6 +127,20 @@ Example:
 
 ```
 bin/typo3 videoValidator:reset Youtube
+```
+
+#### videoValidator:count
+
+Counts all videos of a media extension. This will help you to decide which limits you can work with.
+
+```
+bin/typo3 videoValidator:count extension
+```
+
+Example:
+
+```
+bin/typo3 videoValidator:count Youtube
 ```
 
 ### 4.2 Register your custom validator

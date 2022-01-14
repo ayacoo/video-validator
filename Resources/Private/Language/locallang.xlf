@@ -64,6 +64,10 @@
 			<trans-unit id="reset.end" resname="reset.end">
 				<source>End resetting video status</source>
 			</trans-unit>
+
+			<trans-unit id="count.numberOfVideos" resname="count.numberOfVideos">
+				<source>Number of videos for the media extension</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>
