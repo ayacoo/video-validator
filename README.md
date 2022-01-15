@@ -4,6 +4,7 @@
 
 * Checks if your Youtube or Vimeo videos are still available in the TYPO3 project
 * Can send you reports by email
+* Can use a custom report service
 * Can also check more media extensions through flexible extensibility
 
 ## 2 Usage
@@ -158,7 +159,7 @@ services:
   Ayacoo\Tiktok\Listener\ValidatorListener:
     tags:
       - name: event.listener
-        identifier: 'tiktok/crawler'
+        identifier: 'tiktok/validator'
         method: 'setValidator'
         event: Ayacoo\VideoValidator\Event\ModifyValidatorEvent
 ```
@@ -256,6 +257,133 @@ class TiktokValidator extends AbstractVideoValidator implements AbstractVideoVal
 
 With the custom validator you have to pay attention to the interface, so that you have a correct structure for the
 checks.
+
+### 4.3 Register your custom report
+
+There is also the possibility to register your own ReportService. For example, instead of sending a mail, you can export
+the video list to an XML or CSV file.
+
+### EventListener registration
+
+```
+services:
+  Extension\Namespace\Listener\ReportServiceListener:
+    tags:
+      - name: event.listener
+        identifier: 'extensionkey/reportservice'
+        method: 'setReportService'
+        event: Ayacoo\VideoValidator\Event\ModifyReportServiceEvent
+```
+
+### EventListener
+
+```
+<?php
+declare(strict_types=1);
+
+namespace Extension\Namespace\Listener;
+
+use Ayacoo\VideoValidator\Event\ModifyReportServiceEvent;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
+class ReportServiceListener
+{
+    public function setReportService(ModifyReportServiceEvent $event): ModifyReportServiceEvent
+    {
+        $yourReportService = GeneralUtility::makeInstance(YourReportService::class);
+        $event->setReportService($yourReportService);
+        return $event;
+    }
+}
+
+```
+
+### Custom report
+
+```
+<?php
+
+declare(strict_types=1);
+
+namespace Extension\Namespace\Report;
+
+use Ayacoo\VideoValidator\Service\Report\AbstractReportServiceInterface;
+
+class YourReportService implements AbstractReportServiceInterface
+{
+    protected array $settings = [];
+
+    protected array $validVideos = [];
+
+    protected array $invalidVideos = [];
+
+    public function makeReport(): void
+    {
+        // Do your custom stuff e.g. CSV or XML export
+        $mediaExtension = $this->getSettings()['extension'];
+        $xmlDocument = new SimpleXMLElement('<?xml version="1.0"?><videos/>');
+        foreach ($this->getValidVideos() as $validVideo) {
+            $videoTag = $xmlDocument->addChild('video');
+            $videoTag->addChild('title', $validVideo->getProperty('title'));
+            $videoTag->addChild('url', $validVideo->getPublicUrl());
+        }
+
+        GeneralUtility::writeFile($mediaExtension . '_validVideos.xml', $xmlDocument->asXML());
+    }
+
+    // Have a look for the necessary functions
+    // The ReportCommand gives you the video array
+
+    /**
+     * @return array
+     */
+    public function getSettings(): array
+    {
+        return $this->settings;
+    }
+
+    /**
+     * @param array $settings
+     */
+    public function setSettings(array $settings): void
+    {
+        $this->settings = $settings;
+    }
+
+    /**
+     * @return array
+     */
+    public function getValidVideos(): array
+    {
+        return $this->validVideos;
+    }
+
+    /**
+     * @param array $validVideos
+     */
+    public function setValidVideos(array $validVideos): void
+    {
+        $this->validVideos = $validVideos;
+    }
+
+    /**
+     * @return array
+     */
+    public function getInvalidVideos(): array
+    {
+        return $this->invalidVideos;
+    }
+
+    /**
+     * @param array $invalidVideos
+     */
+    public function setInvalidVideos(array $invalidVideos): void
+    {
+        $this->invalidVideos = $invalidVideos;
+    }
+}
+
+```
 
 ## 5 Thanks / Notices
 
