@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Ayacoo\VideoValidator\Command;
 
 use Ayacoo\VideoValidator\Domain\Repository\FileRepository;
+use Ayacoo\VideoValidator\Event\ModifyReportServiceEvent;
+use Ayacoo\VideoValidator\Service\Report\EmailReportService;
 use Ayacoo\VideoValidator\Service\VideoService;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Mime\Address;
-use TYPO3\CMS\Core\Mail\FluidEmail;
-use TYPO3\CMS\Core\Mail\Mailer;
+use TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Core\Utility\DebugUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
@@ -26,6 +27,8 @@ class ReportCommand extends Command
     private ?FileRepository $fileRepository;
 
     private ?LocalizationUtility $localizationUtility;
+
+    private ?EventDispatcherInterface $eventDispatcher;
 
     protected function configure(): void
     {
@@ -53,14 +56,16 @@ class ReportCommand extends Command
      * @param LocalizationUtility|null $localizationUtility
      */
     public function __construct(
-        ResourceFactory     $resourceFactory = null,
-        FileRepository      $fileRepository = null,
-        LocalizationUtility $localizationUtility = null
+        ResourceFactory          $resourceFactory = null,
+        FileRepository           $fileRepository = null,
+        LocalizationUtility      $localizationUtility = null,
+        EventDispatcherInterface $eventDispatcher = null
     )
     {
         $this->resourceFactory = $resourceFactory;
         $this->fileRepository = $fileRepository;
         $this->localizationUtility = $localizationUtility;
+        $this->eventDispatcher = $eventDispatcher;
         parent::__construct();
     }
 
@@ -91,8 +96,23 @@ class ReportCommand extends Command
         if (in_array(strtolower($extension), $allowedExtensions, true)) {
             $invalidVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_ERROR);
             $validVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_SUCCESS);
-            if (count($invalidVideos) > 0 && count($validVideos) > 0) {
-                $this->sendMail($validVideos, $invalidVideos, $extension, $days, $recipients);
+            if (count($invalidVideos) > 0 || count($validVideos) > 0) {
+                $emailReportService = GeneralUtility::makeInstance(EmailReportService::class);
+
+                // You don't want to send a mail but generate a report? Have a look at the documentation!
+                $modifyReportServiceEvent = $this->eventDispatcher->dispatch(
+                    new ModifyReportServiceEvent($emailReportService)
+                );
+                $reportService = $modifyReportServiceEvent->getReportService();
+                $reportService->setSettings([
+                    'extension' => $extension,
+                    'days' => $days,
+                    'recipients' => $recipients
+                ]);
+                $reportService->setValidVideos($validVideos);
+                $reportService->setInvalidVideos($invalidVideos);
+                $reportService->makeReport();
+
                 $io->info(
                     $this->localizationUtility::translate('report.status.success', 'video_validator')
                 );
@@ -111,37 +131,6 @@ class ReportCommand extends Command
     }
 
     /**
-     * @param array $validVideos
-     * @param array $invalidVideos
-     * @param string $extension
-     * @param int $days
-     * @param array $recipients
-     */
-    protected function sendMail(array $validVideos, array $invalidVideos, string $extension, int $days, array $recipients): void
-    {
-        $subject = 'TYPO3 ' . $extension . ' validation report';
-        $email = GeneralUtility::makeInstance(FluidEmail::class);
-        $email
-            ->from(new Address($GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress']))
-            ->format('html')
-            ->setTemplate('VideoReport')
-            ->subject($subject)
-            ->assign('headline', $subject)
-            ->assign('days', $days)
-            ->assign('numberOfVideos', count($invalidVideos) + count($validVideos))
-            ->assign('invalidVideos', $invalidVideos)
-            ->assign('validVideos', $validVideos);
-        // Fix for scheduler
-        if ($GLOBALS['TYPO3_REQUEST'] ?? '' instanceof ServerRequestInterface) {
-            $email->setRequest($GLOBALS['TYPO3_REQUEST']);
-        }
-        foreach ($recipients as $recipient) {
-            $email->to($recipient);
-            GeneralUtility::makeInstance(Mailer::class)->send($email);
-        }
-    }
-
-    /**
      * @param string $extension
      * @param int $days
      * @param int $status
@@ -153,9 +142,10 @@ class ReportCommand extends Command
         $videos = [];
         $videoStorage = $this->fileRepository->getVideosForReport($extension, $days, $status);
         foreach ($videoStorage as $video) {
-            $file = $this->resourceFactory->getFileObject($video['uid']);
-            if ($file) {
+            try {
+                $file = $this->resourceFactory->getFileObject($video['uid']);
                 $videos[] = $file;
+            } catch (FileDoesNotExistException $e) {
             }
         }
 
