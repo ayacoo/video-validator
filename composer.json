@@ -1,13 +1,17 @@
 {
 	"name": "ayacoo/video-validator",
 	"type": "typo3-cms-extension",
-	"version": "1.1.0",
+	"version": "2.0.0",
 	"description": "Checks online videos in TYPO3 for availability",
 	"homepage": "https://www.ayacoo.de",
 	"authors": [
 		{
 			"name": "Guido Schmechel",
 			"role": "Developer"
+		},
+		{
+			"name": "Garvin Hicking",
+			"role": "Contributor"
 		}
 	],
 	"license": [

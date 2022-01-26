@@ -402,6 +402,7 @@ class YourReportService implements AbstractReportServiceInterface
 Special thanks to Georg Ringer and his [news][3] extension. A good template to build a TYPO3 extension. Here, for
 example, the structure of README.md is used.
 
+Thanks to [Garvin Hicking][5] for adding ReferencedOnly/ReferenceRoot functionality.
 
 [1]: https://getcomposer.org/
 
@@ -410,3 +411,5 @@ example, the structure of README.md is used.
 [3]: https://github.com/georgringer/news
 
 [4]: https://github.com/ayacoo/tiktok
+
+[5]: https://twitter.com/supergarv
