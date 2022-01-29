@@ -31,6 +31,20 @@ class ValidatorCommand extends Command
             InputArgument::REQUIRED,
             'Number of videos to be checked',
         );
+        $this->addOption(
+            'referencedOnly',
+            null,
+            InputArgument::OPTIONAL,
+            'Whether to only fetch records that are referenced on visible pages and content elements (true/false)',
+            false
+        );
+        $this->addOption(
+            'referenceRoot',
+            null,
+            InputArgument::OPTIONAL,
+            'Pagetree root where to search references. Defaults to 0 (all root nodes)',
+            0
+        );
     }
 
     /**
@@ -63,12 +77,20 @@ class ValidatorCommand extends Command
 
         $allowedExtensions = array_keys($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers'] ?? []);
         if (in_array(strtolower($extension), $allowedExtensions, true)) {
-            $io->info(
-                $this->localizationUtility::translate('validation.start', 'video_validator')
-            );
+            if ((bool)$input->getOption('referencedOnly')) {
+                $io->info(
+                    $this->localizationUtility::translate('validation.startReferencedOnly', 'video_validator')
+                );
+            } else {
+                $io->info(
+                    $this->localizationUtility::translate('validation.start', 'video_validator')
+                );
+            }
             $this->videoService->setIo($io);
             $this->videoService->setExtension($extension);
             $this->videoService->setLimit((int)$input->getArgument('limit'));
+            $this->videoService->setReferencedOnly((bool)$input->getOption('referencedOnly'));
+            $this->videoService->setReferenceRoot((int)$input->getOption('referenceRoot'));
             $this->videoService->validate();
             $io->info(
                 $this->localizationUtility::translate('validation.end', 'video_validator')

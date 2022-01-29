@@ -19,6 +19,8 @@ class VideoService
 {
     public const STATUS_SUCCESS = 200;
 
+    public const STATUS_SKIP = 410;
+
     public const STATUS_ERROR = 404;
 
     private ?SymfonyStyle $io;
@@ -35,6 +37,9 @@ class VideoService
 
     private int $limit = 10;
 
+    private bool $referencedOnly = false;
+
+    private int $referenceRoot = 0;
 
     /**
      * @param SymfonyStyle|null $symfonyStyle
@@ -91,6 +96,38 @@ class VideoService
     }
 
     /**
+     * @return bool
+     */
+    public function getReferencedOnly(): bool
+    {
+        return $this->referencedOnly;
+    }
+
+    /**
+     * @param bool $referencedOnly
+     */
+    public function setReferencedOnly(bool $referencedOnly): void
+    {
+        $this->referencedOnly = $referencedOnly;
+    }
+
+    /**
+     * @return int
+     */
+    public function getReferenceRoot(): int
+    {
+        return $this->referenceRoot;
+    }
+
+    /**
+     * @param int $referenceRoot
+     */
+    public function setReferenceRoot(int $referenceRoot): void
+    {
+        $this->referenceRoot = $referenceRoot;
+    }
+
+    /**
      * @return SymfonyStyle|null
      */
     public function getIo(): ?SymfonyStyle
@@ -114,7 +151,7 @@ class VideoService
     {
         $validator = $this->getValidator();
 
-        $videos = $this->fileRepository->getVideosByExtension($this->getExtension(), 0, $this->getLimit());
+        $videos = $this->fileRepository->getVideosByExtension($this->getExtension(), 0, $this->getLimit(), $this->getReferencedOnly(), $this->getReferenceRoot());
         $numberOfVideos = count($videos);
 
         if ($numberOfVideos < 1) {
@@ -149,6 +186,14 @@ class VideoService
                         )
                     );
                     $properties['validation_status'] = self::STATUS_ERROR;
+                } elseif (isset($video['_hasAnyValidReference']) && $video['_hasAnyValidReference'] === false) {
+                    $this->io->warning(
+                        $message . $this->localizationUtility::translate(
+                            'videoService.status.skip',
+                            'video_validator'
+                        )
+                    );
+                    $properties['validation_status'] = self::STATUS_SKIP;
                 } elseif ($validator->isVideoOnline($mediaId)) {
                     $this->io->success(
                         $message . $this->localizationUtility::translate(

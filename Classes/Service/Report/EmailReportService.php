@@ -33,6 +33,8 @@ class EmailReportService implements AbstractReportServiceInterface
             ->assign('headline', $subject)
             ->assign('days', $this->settings['days'])
             ->assign('numberOfVideos', count($this->getInvalidVideos()) + count($this->getValidVideos()))
+            ->assign('referencedOnly', $this->settings['referencedOnly'])
+            ->assign('referenceRoot', $this->settings['referenceRoot'])
             ->assign('invalidVideos', $this->getInvalidVideos())
             ->assign('validVideos', $this->getValidVideos());
         // Fix for scheduler
