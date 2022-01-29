@@ -272,8 +272,8 @@ checks.
 
 ### 4.3 Register your custom report
 
-There is also the possibility to register your own ReportService. For example, instead of sending a mail, you can export
-the video list to an XML or CSV file.
+There is also the possibility to register your own report services. For example, you can export
+the video list to a XML or CSV file. Or maybe sending a slack message?
 
 ### EventListener registration
 
@@ -282,8 +282,8 @@ services:
   Extension\Namespace\Listener\ReportServiceListener:
     tags:
       - name: event.listener
-        identifier: 'extensionkey/reportservice'
-        method: 'setReportService'
+        identifier: 'extensionkey/reportservices'
+        method: 'setReportServices'
         event: Ayacoo\VideoValidator\Event\ModifyReportServiceEvent
 ```
 
@@ -300,10 +300,13 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ReportServiceListener
 {
-    public function setReportService(ModifyReportServiceEvent $event): ModifyReportServiceEvent
+    public function setReportServices(ModifyReportServiceEvent $event): ModifyReportServiceEvent
     {
-        $yourReportService = GeneralUtility::makeInstance(YourReportService::class);
-        $event->setReportService($yourReportService);
+        $yourReportService = GeneralUtility::makeInstance(XmlReportService::class);
+        $reportServices = $event->getReportServices() ?? [];
+        $reportServices['XmlReportService'] = $yourReportService;
+        $event->setReportServices($reportServices);
+
         return $event;
     }
 }
