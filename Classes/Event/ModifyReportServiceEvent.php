@@ -3,35 +3,31 @@ declare(strict_types=1);
 
 namespace Ayacoo\VideoValidator\Event;
 
-use Ayacoo\VideoValidator\Service\Report\AbstractReportServiceInterface;
-
 final class ModifyReportServiceEvent
 {
-    private ?AbstractReportServiceInterface $reportService;
+    private array $reportServices;
 
     /**
-     * @param AbstractReportServiceInterface|null $reportService
+     * @param array $reportServices
      */
-    public function __construct(
-        AbstractReportServiceInterface $reportService = null
-    )
+    public function __construct(array $reportServices = [])
     {
-        $this->reportService = $reportService;
+        $this->reportServices = $reportServices;
     }
 
     /**
-     * @return AbstractReportServiceInterface|null
+     * @return array
      */
-    public function getReportService(): ?AbstractReportServiceInterface
+    public function getReportServices(): array
     {
-        return $this->reportService;
+        return $this->reportServices;
     }
 
     /**
-     * @param AbstractReportServiceInterface|null $reportService
+     * @param array $reportServices
      */
-    public function setReportService(?AbstractReportServiceInterface $reportService): void
+    public function setReportServices(array $reportServices): void
     {
-        $this->reportService = $reportService;
+        $this->reportServices = $reportServices;
     }
 }

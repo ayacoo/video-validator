@@ -101,17 +101,19 @@ class ReportCommand extends Command
 
                 // You don't want to send a mail but generate a report? Have a look at the documentation!
                 $modifyReportServiceEvent = $this->eventDispatcher->dispatch(
-                    new ModifyReportServiceEvent($emailReportService)
+                    new ModifyReportServiceEvent(['EmailReportService' => $emailReportService])
                 );
-                $reportService = $modifyReportServiceEvent->getReportService();
-                $reportService->setSettings([
-                    'extension' => $extension,
-                    'days' => $days,
-                    'recipients' => $recipients
-                ]);
-                $reportService->setValidVideos($validVideos);
-                $reportService->setInvalidVideos($invalidVideos);
-                $reportService->makeReport();
+                $reportServices = $modifyReportServiceEvent->getReportServices();
+                foreach ($reportServices as $reportService) {
+                    $reportService->setSettings([
+                        'extension' => $extension,
+                        'days' => $days,
+                        'recipients' => $recipients
+                    ]);
+                    $reportService->setValidVideos($validVideos);
+                    $reportService->setInvalidVideos($invalidVideos);
+                    $reportService->makeReport();
+                }
 
                 $io->info(
                     $this->localizationUtility::translate('report.status.success', 'video_validator')
