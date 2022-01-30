@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ayacoo\VideoValidator\Domain\Repository;
 
+use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
@@ -35,20 +36,26 @@ class FileRepository
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    public function getVideosByExtension(string $extension, int $validationDate = 0, int $limit = 10, bool $referencedOnly = false, int $referenceRoot = 0): array
+    public function getVideosByExtension(ValidatorDemand $validatorDemand, int $validationDate = 0): array
     {
-        $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
+        $referencedOnly = $validatorDemand->isReferencedOnly();
 
-        $whereConstraints = $this->getDefaultWhereConstraints($queryBuilder, $extension);
+        $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
+        $whereConstraints = $this->getDefaultWhereConstraints($queryBuilder, $validatorDemand->getExtension());
         $whereConstraints[] = $queryBuilder->expr()->lte(
             'validation_date',
             $queryBuilder->createNamedParameter($validationDate, Connection::PARAM_INT)
         );
 
         if ($referencedOnly) {
-            $pidList = $this->getPidList($referenceRoot);
+            $pidList = $this->getPidList($validatorDemand->getReferenceRoot());
         }
-        $statement = $this->getStatementForRepository($queryBuilder, $limit, $referencedOnly, $pidList ?? []);
+        $statement = $this->getStatementForRepository(
+            $queryBuilder,
+            $validatorDemand->getLimit(),
+            $referencedOnly,
+            $pidList ?? []
+        );
         if (!empty($whereConstraints)) {
             $statement->where(
                 ...$whereConstraints
@@ -63,38 +70,40 @@ class FileRepository
         // the videos that were last checked at least 7 days ago will be retrieved.
         if (empty($videos) && $validationDate === 0) {
             $validationDate = time() - (86400 * 7);
-            return $this->getVideosByExtension($extension, $validationDate, $limit, $referencedOnly);
+            return $this->getVideosByExtension($validatorDemand, $validationDate);
         }
 
         return $videos;
     }
 
     /**
-     * @param string $extension
-     * @param int $days
+     * @param ValidatorDemand $validatorDemand
      * @param int $validationStatus
-     * @param bool $referencedOnly
-     * @param int $referenceRoot
      * @return array
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    public function getVideosForReport(string $extension, int $days = 7, int $validationStatus = 200, bool $referencedOnly = false, int $referenceRoot = 0): array
+    public function getVideosForReport(ValidatorDemand $validatorDemand, int $validationStatus = 200): array
     {
         $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
 
-        $whereConstraints = $this->getDefaultWhereConstraints($queryBuilder, $extension);
+        $referencedOnly = $validatorDemand->isReferencedOnly();
+
+        $whereConstraints = $this->getDefaultWhereConstraints($queryBuilder, $validatorDemand->getExtension());
         $whereConstraints[] = $queryBuilder->expr()->eq(
             'validation_status',
             $queryBuilder->createNamedParameter($validationStatus, Connection::PARAM_INT)
         );
         $whereConstraints[] = $queryBuilder->expr()->gt(
             'validation_date',
-            $queryBuilder->createNamedParameter(time() - (86400 * $days), Connection::PARAM_INT)
+            $queryBuilder->createNamedParameter(
+                time() - (86400 * $validatorDemand->getDays()),
+                Connection::PARAM_INT
+            )
         );
 
         if ($referencedOnly) {
-            $pidList = $this->getPidList($referenceRoot);
+            $pidList = $this->getPidList($validatorDemand->getReferenceRoot());
         }
         $statement = $this->getStatementForRepository($queryBuilder, 0, $referencedOnly, $pidList ?? []);
         if (!empty($whereConstraints)) {
@@ -189,7 +198,12 @@ class FileRepository
      * @param array $pidList
      * @return QueryBuilder
      */
-    protected function getStatementForRepository(QueryBuilder &$queryBuilder, int $limit, bool $referencedOnly, array $pidList): QueryBuilder
+    protected function getStatementForRepository(
+        QueryBuilder &$queryBuilder,
+        int          $limit,
+        bool         $referencedOnly,
+        array        $pidList
+    ): QueryBuilder
     {
         if ($referencedOnly) {
             // Narrator: Sadly SQL Joins cannot be performed on the sys_file_reference.tablenames column as a dynamic join.

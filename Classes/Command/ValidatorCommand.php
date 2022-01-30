@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ayacoo\VideoValidator\Command;
 
+use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
 use Ayacoo\VideoValidator\Service\VideoService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -71,6 +72,7 @@ class ValidatorCommand extends Command
      * @return int
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
+     * @throws \Doctrine\DBAL\Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -88,12 +90,16 @@ class ValidatorCommand extends Command
                     $this->localizationUtility::translate('validation.start', 'video_validator')
                 );
             }
+
+            $validatorDemand = new ValidatorDemand();
+            $validatorDemand->setExtension($extension);
+            $validatorDemand->setLimit((int)$input->getOption('limit'));
+            $validatorDemand->setReferencedOnly((bool)$input->getOption('referencedOnly'));
+            $validatorDemand->setReferenceRoot((int)$input->getOption('referenceRoot'));
+
             $this->videoService->setIo($io);
-            $this->videoService->setExtension($extension);
-            $this->videoService->setLimit((int)$input->getOption('limit'));
-            $this->videoService->setReferencedOnly((bool)$input->getOption('referencedOnly'));
-            $this->videoService->setReferenceRoot((int)$input->getOption('referenceRoot'));
-            $this->videoService->validate();
+            $this->videoService->validate($validatorDemand);
+
             $io->info(
                 $this->localizationUtility::translate('validation.end', 'video_validator')
             );

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ayacoo\VideoValidator\Service;
 
+use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
 use Ayacoo\VideoValidator\Domain\Repository\FileRepository;
 use Ayacoo\VideoValidator\Event\ModifyValidatorEvent;
 use Ayacoo\VideoValidator\Service\Validator\AbstractVideoValidatorInterface;
@@ -33,14 +34,6 @@ class VideoService
 
     private ?LocalizationUtility $localizationUtility;
 
-    private string $extension = '';
-
-    private int $limit = 10;
-
-    private bool $referencedOnly = false;
-
-    private int $referenceRoot = 0;
-
     /**
      * @param SymfonyStyle|null $symfonyStyle
      * @param EventDispatcherInterface|null $eventDispatcher
@@ -64,70 +57,6 @@ class VideoService
     }
 
     /**
-     * @return string
-     */
-    public function getExtension(): string
-    {
-        return $this->extension;
-    }
-
-    /**
-     * @param string $extension
-     */
-    public function setExtension(string $extension): void
-    {
-        $this->extension = $extension;
-    }
-
-    /**
-     * @return int
-     */
-    public function getLimit(): int
-    {
-        return $this->limit;
-    }
-
-    /**
-     * @param int $limit
-     */
-    public function setLimit(int $limit): void
-    {
-        $this->limit = $limit;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getReferencedOnly(): bool
-    {
-        return $this->referencedOnly;
-    }
-
-    /**
-     * @param bool $referencedOnly
-     */
-    public function setReferencedOnly(bool $referencedOnly): void
-    {
-        $this->referencedOnly = $referencedOnly;
-    }
-
-    /**
-     * @return int
-     */
-    public function getReferenceRoot(): int
-    {
-        return $this->referenceRoot;
-    }
-
-    /**
-     * @param int $referenceRoot
-     */
-    public function setReferenceRoot(int $referenceRoot): void
-    {
-        $this->referenceRoot = $referenceRoot;
-    }
-
-    /**
      * @return SymfonyStyle|null
      */
     public function getIo(): ?SymfonyStyle
@@ -144,28 +73,33 @@ class VideoService
     }
 
     /**
+     * @param ValidatorDemand $validatorDemand
      * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
      * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
      */
-    public function validate()
+    public function validate(ValidatorDemand $validatorDemand)
     {
-        $validator = $this->getValidator();
+        $validator = $this->getValidator($validatorDemand);
 
-        $videos = $this->fileRepository->getVideosByExtension($this->getExtension(), 0, $this->getLimit(), $this->getReferencedOnly(), $this->getReferenceRoot());
+        $videos = $this->fileRepository->getVideosByExtension(
+            $validatorDemand,
+            0,
+        );
         $numberOfVideos = count($videos);
 
         if ($numberOfVideos < 1) {
             $this->io->warning(
                 sprintf(
                     $this->localizationUtility::translate('videoService.noVideoValidation', 'video_validator'),
-                    $this->getExtension()
+                    $validatorDemand->getExtension()
                 )
             );
         } elseif ($validator === null) {
             $this->io->error(
                 sprintf(
                     $this->localizationUtility::translate('videoService.noValidatorFound', 'video_validator'),
-                    $this->getExtension()
+                    $validatorDemand->getExtension()
                 )
             );
         } else {
@@ -177,7 +111,7 @@ class VideoService
                 $mediaId = $validator->getOnlineMediaId($file);
 
                 $title = $file->getProperty('title') ?? '';
-                $message = $this->getExtension() . ' Video ' . $title ;
+                $message = $validatorDemand->getExtension() . ' Video ' . $title;
                 if (empty($mediaId)) {
                     $this->io->warning(
                         $message . $this->localizationUtility::translate(
@@ -216,7 +150,7 @@ class VideoService
                     [],
                     [
                         ['File UID: ' . $video['uid']],
-                        ['Title: ' .  $file->getProperty('title') ?? 'No title'],
+                        ['Title: ' . $file->getProperty('title') ?? 'No title'],
                         ['Identifier: ' . $file->getIdentifier()],
                         ['URL: ' . $validator->buildUrl($mediaId)]
                     ]
@@ -233,21 +167,24 @@ class VideoService
      * There is direct support for the core media extensions Youtube and Vimeo. Other media extensions can be overwritten
      * via event. More about this in the README.md
      *
+     * @param ValidatorDemand $validatorDemand
      * @return AbstractVideoValidatorInterface|null
      */
-    protected function getValidator(): ?AbstractVideoValidatorInterface
+    protected function getValidator(ValidatorDemand $validatorDemand): ?AbstractVideoValidatorInterface
     {
+        $extension = $validatorDemand->getExtension();
+
         $validator = null;
-        switch ($this->getExtension()) {
+        switch ($extension) {
             case 'Youtube':
-                $validator = GeneralUtility::makeInstance(YoutubeValidator::class, $this->getExtension());
+                $validator = GeneralUtility::makeInstance(YoutubeValidator::class, $extension);
                 break;
             case 'Vimeo':
-                $validator = GeneralUtility::makeInstance(VimeoValidator::class, $this->getExtension());
+                $validator = GeneralUtility::makeInstance(VimeoValidator::class, $extension);
                 break;
         }
         $modifyValidatorEvent = $this->eventDispatcher->dispatch(
-            new ModifyValidatorEvent($validator, $this->getExtension())
+            new ModifyValidatorEvent($validator, $extension)
         );
         return $modifyValidatorEvent->getValidator();
     }

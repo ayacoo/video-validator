@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ayacoo\VideoValidator\Command;
 
+use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
 use Ayacoo\VideoValidator\Domain\Repository\FileRepository;
 use Ayacoo\VideoValidator\Event\ModifyReportServiceEvent;
 use Ayacoo\VideoValidator\Service\Report\EmailReportService;
@@ -96,15 +97,20 @@ class ReportCommand extends Command
      * @return int
      * @throws FileDoesNotExistException
      * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $days = (int) $input->getOption('days') ?? 7;
-        $recipients = GeneralUtility::trimExplode(',', trim($input->getOption('recipients')));
-        $extension = trim($input->getOption('extension'));
-        $referencedOnly = (bool)$input->getOption('referencedOnly');
-        $referenceRoot = (int)$input->getOption('referenceRoot');
+
+        $validatorDemand = new ValidatorDemand();
+        $validatorDemand->setDays((int)$input->getOption('days'));
+        $validatorDemand->setRecipients(
+            GeneralUtility::trimExplode(',', trim($input->getOption('recipients')))
+        );
+        $validatorDemand->setExtension(trim($input->getOption('extension')));
+        $validatorDemand->setReferencedOnly((bool)$input->getOption('referencedOnly'));
+        $validatorDemand->setReferenceRoot((int)$input->getOption('referenceRoot'));
 
         $sender = $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'] ?? '';
         if (empty($sender)) {
@@ -115,9 +121,9 @@ class ReportCommand extends Command
         }
 
         $allowedExtensions = array_keys($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers'] ?? []);
-        if (in_array(strtolower($extension), $allowedExtensions, true)) {
-            $invalidVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_ERROR, $referencedOnly, $referenceRoot);
-            $validVideos = $this->getVideosByStatus($extension, $days, VideoService::STATUS_SUCCESS, $referencedOnly, $referenceRoot);
+        if (in_array(strtolower($validatorDemand->getExtension()), $allowedExtensions, true)) {
+            $invalidVideos = $this->getVideosByStatus($validatorDemand, VideoService::STATUS_ERROR);
+            $validVideos = $this->getVideosByStatus($validatorDemand, VideoService::STATUS_SUCCESS);
             if (count($invalidVideos) > 0 || count($validVideos) > 0) {
                 $emailReportService = GeneralUtility::makeInstance(EmailReportService::class);
 
@@ -129,11 +135,11 @@ class ReportCommand extends Command
                 $reportServices = $modifyReportServiceEvent->getReportServices();
                 foreach ($reportServices as $reportService) {
                     $reportService->setSettings([
-                        'extension' => $extension,
-                        'days' => $days,
-                        'recipients' => $recipients,
-                        'referencedOnly' => $referencedOnly,
-                        'referenceRoot' => $referenceRoot
+                        'extension' => $validatorDemand->getExtension(),
+                        'days' => $validatorDemand->getDays(),
+                        'recipients' => $validatorDemand->getRecipients(),
+                        'referencedOnly' => $validatorDemand->isReferencedOnly(),
+                        'referenceRoot' => $validatorDemand->getReferenceRoot()
                     ]);
                     $reportService->setValidVideos($validVideos);
                     $reportService->setInvalidVideos($invalidVideos);
@@ -158,20 +164,17 @@ class ReportCommand extends Command
     }
 
     /**
-     * @param string $extension
-     * @param int $days
+     * @param ValidatorDemand $validatorDemand
      * @param int $status
-     * @param bool $referencedOnly
-     * @param int $referenceRoot
      * @return array
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
      * @throws \Doctrine\DBAL\Exception
      */
-    protected function getVideosByStatus(string $extension, int $days, int $status, bool $referencedOnly, int $referenceRoot): array
+    protected function getVideosByStatus(ValidatorDemand $validatorDemand, int $status): array
     {
         $videos = [];
-        $videoStorage = $this->fileRepository->getVideosForReport($extension, $days, $status, $referencedOnly, $referenceRoot);
+        $videoStorage = $this->fileRepository->getVideosForReport($validatorDemand, $status);
         foreach ($videoStorage as $video) {
             try {
                 $file = $this->resourceFactory->getFileObject($video['uid']);
