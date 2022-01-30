@@ -10,13 +10,12 @@ use Ayacoo\VideoValidator\Service\Report\EmailReportService;
 use Ayacoo\VideoValidator\Service\VideoService;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Core\Utility\DebugUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
@@ -32,33 +31,38 @@ class ReportCommand extends Command
 
     protected function configure(): void
     {
-        $this->setDescription('Send video report');
-        $this->addArgument(
-            'days',
-            InputArgument::REQUIRED,
-            'Number of days',
-        );
-        $this->addArgument(
+        $this->setDescription('Make a video report');
+        $this->addOption(
             'recipients',
-            InputArgument::REQUIRED,
+            null,
+            InputOption::VALUE_REQUIRED,
             'Comma separated list of email recipients',
+            ''
         );
-        $this->addArgument(
+        $this->addOption(
             'extension',
-            InputArgument::REQUIRED,
+            null,
+            InputOption::VALUE_REQUIRED,
             'Name of the video extension',
+        );
+        $this->addOption(
+            'days',
+            null,
+            InputOption::VALUE_OPTIONAL,
+            'Number of days',
+            7
         );
         $this->addOption(
             'referencedOnly',
             null,
-            InputArgument::OPTIONAL,
+            InputOption::VALUE_OPTIONAL,
             'Whether to only fetch records that are referenced on visible pages and content elements (true/false)',
             false
         );
         $this->addOption(
             'referenceRoot',
             null,
-            InputArgument::OPTIONAL,
+            InputOption::VALUE_OPTIONAL,
             'Pagetree root where to search references. Defaults to 0 (all root nodes)',
             0
         );
@@ -90,13 +94,15 @@ class ReportCommand extends Command
      * @param OutputInterface $output
      *
      * @return int
+     * @throws FileDoesNotExistException
+     * @throws \Doctrine\DBAL\Driver\Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $days = (int)trim($input->getArgument('days')) ?? 7;
-        $recipients = GeneralUtility::trimExplode(',', trim($input->getArgument('recipients')));
-        $extension = trim($input->getArgument('extension'));
+        $days = (int) $input->getOption('days') ?? 7;
+        $recipients = GeneralUtility::trimExplode(',', trim($input->getOption('recipients')));
+        $extension = trim($input->getOption('extension'));
         $referencedOnly = (bool)$input->getOption('referencedOnly');
         $referenceRoot = (int)$input->getOption('referenceRoot');
 
@@ -126,8 +132,8 @@ class ReportCommand extends Command
                         'extension' => $extension,
                         'days' => $days,
                         'recipients' => $recipients,
-                    'referencedOnly' => $referencedOnly,
-                    'referenceRoot' => $referenceRoot
+                        'referencedOnly' => $referencedOnly,
+                        'referenceRoot' => $referenceRoot
                     ]);
                     $reportService->setValidVideos($validVideos);
                     $reportService->setInvalidVideos($invalidVideos);
@@ -148,7 +154,7 @@ class ReportCommand extends Command
             );
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**
@@ -158,9 +164,9 @@ class ReportCommand extends Command
      * @param bool $referencedOnly
      * @param int $referenceRoot
      * @return array
-     * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
+     * @throws \Doctrine\DBAL\Exception
      */
     protected function getVideosByStatus(string $extension, int $days, int $status, bool $referencedOnly, int $referenceRoot): array
     {

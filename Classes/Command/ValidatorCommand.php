@@ -6,8 +6,8 @@ namespace Ayacoo\VideoValidator\Command;
 
 use Ayacoo\VideoValidator\Service\VideoService;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -21,27 +21,29 @@ class ValidatorCommand extends Command
     protected function configure(): void
     {
         $this->setDescription('Checks online videos in TYPO3 backend for accessibility like Youtube and Vimeo');
-        $this->addArgument(
+        $this->addOption(
             'extension',
-            InputArgument::REQUIRED,
+            null,
+            InputOption::VALUE_REQUIRED,
             'e.g. Youtube',
         );
-        $this->addArgument(
+        $this->addOption(
             'limit',
-            InputArgument::REQUIRED,
+            null,
+            InputOption::VALUE_REQUIRED,
             'Number of videos to be checked',
         );
         $this->addOption(
             'referencedOnly',
             null,
-            InputArgument::OPTIONAL,
+            InputOption::VALUE_OPTIONAL,
             'Whether to only fetch records that are referenced on visible pages and content elements (true/false)',
             false
         );
         $this->addOption(
             'referenceRoot',
             null,
-            InputArgument::OPTIONAL,
+            InputOption::VALUE_OPTIONAL,
             'Pagetree root where to search references. Defaults to 0 (all root nodes)',
             0
         );
@@ -73,11 +75,11 @@ class ValidatorCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $extension = $input->getArgument('extension');
+        $extension = $input->getOption('extension');
 
         $allowedExtensions = array_keys($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers'] ?? []);
         if (in_array(strtolower($extension), $allowedExtensions, true)) {
-            if ((bool)$input->getOption('referencedOnly')) {
+            if ($input->getOption('referencedOnly')) {
                 $io->info(
                     $this->localizationUtility::translate('validation.startReferencedOnly', 'video_validator')
                 );
@@ -88,7 +90,7 @@ class ValidatorCommand extends Command
             }
             $this->videoService->setIo($io);
             $this->videoService->setExtension($extension);
-            $this->videoService->setLimit((int)$input->getArgument('limit'));
+            $this->videoService->setLimit((int)$input->getOption('limit'));
             $this->videoService->setReferencedOnly((bool)$input->getOption('referencedOnly'));
             $this->videoService->setReferenceRoot((int)$input->getOption('referenceRoot'));
             $this->videoService->validate();
@@ -101,6 +103,6 @@ class ValidatorCommand extends Command
             );
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

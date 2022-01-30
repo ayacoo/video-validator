@@ -50,9 +50,9 @@ you can take care of the corresponding corrections.
 
 ### 3.1 Versions and support
 
-| News        | TYPO3      | PHP       | Support / Development                   |
+| Version     | TYPO3      | PHP       | Support / Development                   |
 | ----------- | ---------- | ----------|---------------------------------------- |
-| 1.x         | 10.x - 11.x| 7.4 - 8.0 | features, bugfixes, security updates    |
+| 2.x         | 10.x - 11.x| 7.4 - 8.0 | features, bugfixes, security updates    |
 
 ### 3.2 Release Management
 
@@ -93,19 +93,19 @@ limits.
 Validates a defined number of videos for the defined media extension
 
 ```
-bin/typo3 videoValidator:validate extension limit --referencedOnly=0(default)|1 --referenceRoot=0(default)
+bin/typo3 videoValidator:validate --extension --limit --referencedOnly=0(default)|1 --referenceRoot=0(default)
 ```
 
 Example:
 
 ```
-bin/typo3 videoValidator:validate Vimeo 10
+bin/typo3 videoValidator:validate --extension=Vimeo --limit=10
 ```
 
 Example for fetching only videos that are referenced on visible, non-deleted pages within visible, non-deleted references:
 
 ```
-bin/typo3 videoValidator:validate Vimeo 10 --referencedOnly=1
+bin/typo3 videoValidator:validate --extension=Vimeo --limit=10 --referencedOnly=1
 ```
 
 You can specify the `--referenceRoot` option to specify a PageRoot UID where to search for references. `0` by default means all available roots.
@@ -117,13 +117,13 @@ Pay attention to using the right upper/lowercase media extension names (`Youtube
 Create an email report of Youtube videos from the last 7 days
 
 ```
-bin/typo3 videoValidator:report days receiver extension --referencedOnly=0(default)|1 --referenceRoot=0(default)
+bin/typo3 videoValidator:report --days --recipients --extension --referencedOnly=0(default)|1 --referenceRoot=0(default)
 ```
 
 Example:
 
 ```
-bin/typo3 videoValidator:report 7 receiver@example.com,receiver2@example.com Youtube
+bin/typo3 videoValidator:report --days=7 --recipients=receiver@example.com,receiver2@example.com --extension=Youtube
 ```
 
 The same `referencedOnly` and `referenceRoot` options like in `videoValidator:validate` are available.
@@ -133,13 +133,13 @@ The same `referencedOnly` and `referenceRoot` options like in `videoValidator:va
 Resets all video states of a media extension.
 
 ```
-bin/typo3 videoValidator:reset extension
+bin/typo3 videoValidator:reset --extension
 ```
 
 Example:
 
 ```
-bin/typo3 videoValidator:reset Youtube
+bin/typo3 videoValidator:reset --extension=Youtube
 ```
 
 #### videoValidator:count
@@ -147,13 +147,13 @@ bin/typo3 videoValidator:reset Youtube
 Counts all videos of a media extension. This will help you to decide which limits you can work with.
 
 ```
-bin/typo3 videoValidator:count extension
+bin/typo3 videoValidator:count --extension
 ```
 
 Example:
 
 ```
-bin/typo3 videoValidator:count Youtube
+bin/typo3 videoValidator:count --extension=Youtube
 ```
 
 ### 4.2 Register your custom validator

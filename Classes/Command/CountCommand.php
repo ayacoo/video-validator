@@ -6,8 +6,8 @@ namespace Ayacoo\VideoValidator\Command;
 
 use Ayacoo\VideoValidator\Domain\Repository\FileRepository;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -21,9 +21,10 @@ class CountCommand extends Command
     protected function configure(): void
     {
         $this->setDescription('Counts all videos of a media extension');
-        $this->addArgument(
+        $this->addOption(
             'extension',
-            InputArgument::REQUIRED,
+            null,
+            InputOption::VALUE_REQUIRED,
             'e.g. Youtube',
         );
     }
@@ -52,7 +53,7 @@ class CountCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $extension = $input->getArgument('extension');
+        $extension = $input->getOption('extension');
 
         $allowedExtensions = array_keys($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers'] ?? []);
         if (in_array(strtolower($extension), $allowedExtensions, true)) {
@@ -67,6 +68,6 @@ class CountCommand extends Command
             );
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }
