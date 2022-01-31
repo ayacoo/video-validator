@@ -46,23 +46,19 @@ class FileRepository
             $queryBuilder->createNamedParameter($validationDate, Connection::PARAM_INT)
         );
 
+        $pidList = [];
+        $videos = [];
         if ($referencedOnly) {
             $pidList = $this->getPidList($validatorDemand->getReferenceRoot());
         }
-        $statement = $this->getStatementForRepository(
-            $queryBuilder,
-            $validatorDemand->getLimit(),
-            $referencedOnly,
-            $pidList ?? []
-        );
-        if (!empty($whereConstraints)) {
-            $statement->where(
-                ...$whereConstraints
-            );
-        }
-        $videos = $statement->execute()->fetchAllAssociative() ?? [];
-        if ($referencedOnly && count($videos) > 0) {
-            $this->parseVideosForReferences($videos, $pidList ?? []);
+        $pidListChunks = array_chunk($pidList, $this->maxBindParameters, true);
+
+        if (count($pidListChunks) > 0) {
+            foreach ($pidListChunks as $pidListChunk) {
+                $videos = $this->getVideosByExtensionChunk($queryBuilder, $validatorDemand, $referencedOnly, $pidListChunk, $whereConstraints);
+            }
+        } else {
+            $videos = $this->getVideosByExtensionChunk($queryBuilder, $validatorDemand, $referencedOnly, [], $whereConstraints);
         }
 
         // Fallback: If all videos have already been checked once,
@@ -101,18 +97,19 @@ class FileRepository
             )
         );
 
+        $pidList = [];
+        $videos = [];
         if ($referencedOnly) {
             $pidList = $this->getPidList($validatorDemand->getReferenceRoot());
         }
-        $statement = $this->getStatementForRepository($queryBuilder, 0, $referencedOnly, $pidList ?? []);
-        if (!empty($whereConstraints)) {
-            $statement->where(
-                ...$whereConstraints
-            );
-        }
-        $videos = $statement->execute()->fetchAllAssociative() ?? [];
-        if ($referencedOnly && count($videos) > 0) {
-            $this->parseVideosForReferences($videos, $pidList ?? []);
+        $pidListChunks = array_chunk($pidList, $this->maxBindParameters, true);
+
+        if (count($pidListChunks) > 0) {
+            foreach ($pidListChunks as $pidListChunk) {
+                $videos = array_merge($videos, $this->getVideosForReportChunk($queryBuilder, $referencedOnly, $pidListChunk, $whereConstraints));
+            }
+        } else {
+            $videos = $this->getVideosForReportChunk($queryBuilder, $referencedOnly, [], $whereConstraints);
         }
 
         return $videos;
@@ -251,61 +248,58 @@ class FileRepository
      */
     protected function parseVideosForReferences(array &$videos, array $pidList)
     {
-        $pidListChunks = array_chunk($pidList, $this->maxBindParameters, true);
         // See above. We need to iterate each referenced file and check the referenced content-element to check its active state.
         // First query: Resolve all table names to fetch. Note that we can get multiple results for one sys_file record, i.e.
         //  a video could be referenced in 5 different content elements. The video shall only be checked if at least one
         //  content element is enabled.
-        foreach ($pidListChunks as $pidListChunk) {
-            foreach ($videos as $videoId => $video) {
-                $subQueryBuilder = $this->getQueryBuilder(self::SYS_FILE_REFERENCE_TABLE);
+        foreach ($videos as $videoId => $video) {
+            $subQueryBuilder = $this->getQueryBuilder(self::SYS_FILE_REFERENCE_TABLE);
 
-                $subConstraints = [];
-                $subConstraints[] = $subQueryBuilder->expr()->eq(
-                    'uid_local',
-                    $subQueryBuilder->createNamedParameter($video['uid'], \PDO::PARAM_INT)
+            $subConstraints = [];
+            $subConstraints[] = $subQueryBuilder->expr()->eq(
+                'uid_local',
+                $subQueryBuilder->createNamedParameter($video['uid'], \PDO::PARAM_INT)
+            );
+            $subConstraints[] = $subQueryBuilder->expr()->in(
+                'pid',
+                $pidList
+            );
+
+            $subStatement = $subQueryBuilder
+                ->select('*')
+                ->from(self::SYS_FILE_REFERENCE_TABLE)
+                ->where(...$subConstraints);
+            $contentElements = $subStatement->execute()->fetchAllAssociative() ?? [];
+
+            $hasAnyValidReference = false;
+            foreach ($contentElements as $contentElement) {
+                $ceQueryBuilder = $this->getQueryBuilder($contentElement['tablenames']);
+
+                $ceConstraints = [];
+                $ceConstraints[] = $ceQueryBuilder->expr()->eq(
+                    'uid',
+                    $ceQueryBuilder->createNamedParameter($contentElement['uid_foreign'], \PDO::PARAM_INT)
                 );
-                $subConstraints[] = $subQueryBuilder->expr()->in(
+                $ceConstraints[] = $ceQueryBuilder->expr()->in(
                     'pid',
-                    $pidListChunk
+                    $pidList
                 );
 
-                $subStatement = $subQueryBuilder
+                $ceStatement = $ceQueryBuilder
                     ->select('*')
-                    ->from(self::SYS_FILE_REFERENCE_TABLE)
-                    ->where(...$subConstraints);
-                $contentElements = $subStatement->execute()->fetchAllAssociative() ?? [];
+                    ->from($contentElement['tablenames'])
+                    ->where(...$ceConstraints);
 
-                $hasAnyValidReference = false;
-                foreach ($contentElements as $contentElement) {
-                    $ceQueryBuilder = $this->getQueryBuilder($contentElement['tablenames']);
-
-                    $ceConstraints = [];
-                    $ceConstraints[] = $ceQueryBuilder->expr()->eq(
-                        'uid',
-                        $ceQueryBuilder->createNamedParameter($contentElement['uid_foreign'], \PDO::PARAM_INT)
-                    );
-                    $ceConstraints[] = $ceQueryBuilder->expr()->in(
-                        'pid',
-                        $pidListChunk
-                    );
-
-                    $ceStatement = $ceQueryBuilder
-                        ->select('*')
-                        ->from($contentElement['tablenames'])
-                        ->where(...$ceConstraints);
-
-                    $contentElementReferences = $ceStatement->execute()->fetchAllAssociative() ?? [];
-                    if (count($contentElementReferences) > 0) {
-                        $hasAnyValidReference = true;
-                        // On first hit of a video reference we don't need to check any others.
-                        break;
-                    }
+                $contentElementReferences = $ceStatement->execute()->fetchAllAssociative() ?? [];
+                if (count($contentElementReferences) > 0) {
+                    $hasAnyValidReference = true;
+                    // On first hit of a video reference we don't need to check any others.
+                    break;
                 }
-
-                // This video has not been referenced in any active content element. It will not be checked.
-                $videos[$videoId]['_hasAnyValidReference'] = $hasAnyValidReference;
             }
+
+            // This video has not been referenced in any active content element. It will not be checked.
+            $videos[$videoId]['_hasAnyValidReference'] = $hasAnyValidReference;
         }
     }
 
@@ -367,5 +361,68 @@ class FileRepository
             }
         }
         return $pageIds;
+    }
+
+    /**
+     * @param QueryBuilder $queryBuilder
+     * @param bool $referencedOnly
+     * @param array $pidListChunk
+     * @param array $whereConstraints
+     * @return array
+     * @throws \Doctrine\DBAL\Exception
+     */
+    protected function getVideosForReportChunk(
+        QueryBuilder $queryBuilder,
+        bool         $referencedOnly,
+        array        $pidListChunk,
+        array        $whereConstraints): array
+    {
+        $statement = $this->getStatementForRepository($queryBuilder, 0, $referencedOnly, $pidListChunk);
+        if (!empty($whereConstraints)) {
+            $statement->where(
+                ...$whereConstraints
+            );
+        }
+        $videos = $statement->execute()->fetchAllAssociative();
+        if ($referencedOnly && count($videos) > 0) {
+            $this->parseVideosForReferences($videos, $pidListChunk);
+        }
+
+        return $videos;
+    }
+
+    /**
+     * @param QueryBuilder $queryBuilder
+     * @param ValidatorDemand $validatorDemand
+     * @param bool $referencedOnly
+     * @param array $pidListChunk
+     * @param array $whereConstraints
+     * @return array
+     * @throws \Doctrine\DBAL\Exception
+     */
+    protected function getVideosByExtensionChunk(
+        QueryBuilder    $queryBuilder,
+        ValidatorDemand $validatorDemand,
+        bool            $referencedOnly,
+        array           $pidListChunk,
+        array           $whereConstraints): array
+    {
+        $statement = $this->getStatementForRepository(
+            $queryBuilder,
+            $validatorDemand->getLimit(),
+            $referencedOnly,
+            $pidListChunk
+        );
+        if (!empty($whereConstraints)) {
+            $statement->where(
+                ...$whereConstraints
+            );
+        }
+        $videos = $statement->execute()->fetchAllAssociative();
+        if ($referencedOnly && count($videos) > 0) {
+            $this->parseVideosForReferences($videos, $pidListChunk);
+        }
+
+        return $videos;
     }
 }
