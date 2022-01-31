@@ -7,6 +7,7 @@ namespace Ayacoo\VideoValidator\Domain\Repository;
 use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Platform\PlatformInformation;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -17,6 +18,7 @@ class FileRepository
     private const SYS_FILE_REFERENCE_TABLE = 'sys_file_reference';
     private const PAGES_TABLE = 'pages';
     private ?SiteFinder $siteFinder;
+    private int $maxBindParameters = 999;
 
     /**
      * @param SiteFinder|null $siteFinder
@@ -27,11 +29,8 @@ class FileRepository
     }
 
     /**
-     * @param string $extension
+     * @param ValidatorDemand $validatorDemand
      * @param int $validationDate
-     * @param int $limit
-     * @param bool $referencedOnly
-     * @param int $referenceRoot
      * @return array
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
@@ -121,6 +120,7 @@ class FileRepository
 
     /**
      * @param string $extension
+     * @throws \Doctrine\DBAL\Exception
      */
     public function resetValidationState(string $extension)
     {
@@ -142,6 +142,7 @@ class FileRepository
     /**
      * @param int $fileUid
      * @param array $properties
+     * @throws \Doctrine\DBAL\Exception
      */
     public function updatePropertiesByFile(int $fileUid, array $properties = [])
     {
@@ -164,12 +165,16 @@ class FileRepository
     /**
      * @param string $tableName
      * @return QueryBuilder
+     * @throws \Doctrine\DBAL\Exception
      */
     protected function getQueryBuilder(string $tableName = ''): QueryBuilder
     {
-        return GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionForTable($tableName)
-            ->createQueryBuilder();
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $connection = $connectionPool->getConnectionForTable($tableName);
+
+        $this->maxBindParameters = PlatformInformation::getMaxBindParameters($connection->getDatabasePlatform());
+
+        return $connection->createQueryBuilder();
     }
 
     /**
@@ -246,59 +251,61 @@ class FileRepository
      */
     protected function parseVideosForReferences(array &$videos, array $pidList)
     {
+        $pidListChunks = array_chunk($pidList, $this->maxBindParameters, true);
         // See above. We need to iterate each referenced file and check the referenced content-element to check its active state.
         // First query: Resolve all table names to fetch. Note that we can get multiple results for one sys_file record, i.e.
         //  a video could be referenced in 5 different content elements. The video shall only be checked if at least one
         //  content element is enabled.
+        foreach ($pidListChunks as $pidListChunk) {
+            foreach ($videos as $videoId => $video) {
+                $subQueryBuilder = $this->getQueryBuilder(self::SYS_FILE_REFERENCE_TABLE);
 
-        foreach ($videos as $videoId => $video) {
-            $subQueryBuilder = $this->getQueryBuilder(self::SYS_FILE_REFERENCE_TABLE);
-
-            $subConstraints = [];
-            $subConstraints[] = $subQueryBuilder->expr()->eq(
-                'uid_local',
-                $subQueryBuilder->createNamedParameter($video['uid'], \PDO::PARAM_INT)
-            );
-            $subConstraints[] = $subQueryBuilder->expr()->in(
-                'pid',
-                $pidList
-            );
-
-            $subStatement = $subQueryBuilder
-                ->select('*')
-                ->from(self::SYS_FILE_REFERENCE_TABLE)
-                ->where(...$subConstraints);
-            $contentElements = $subStatement->execute()->fetchAllAssociative() ?? [];
-
-            $hasAnyValidReference = false;
-            foreach ($contentElements as $contentElement) {
-                $ceQueryBuilder = $this->getQueryBuilder($contentElement['tablenames']);
-
-                $ceConstraints = [];
-                $ceConstraints[] = $ceQueryBuilder->expr()->eq(
-                    'uid',
-                    $ceQueryBuilder->createNamedParameter($contentElement['uid_foreign'], \PDO::PARAM_INT)
+                $subConstraints = [];
+                $subConstraints[] = $subQueryBuilder->expr()->eq(
+                    'uid_local',
+                    $subQueryBuilder->createNamedParameter($video['uid'], \PDO::PARAM_INT)
                 );
-                $ceConstraints[] = $ceQueryBuilder->expr()->in(
+                $subConstraints[] = $subQueryBuilder->expr()->in(
                     'pid',
-                    $pidList
+                    $pidListChunk
                 );
 
-                $ceStatement = $ceQueryBuilder
+                $subStatement = $subQueryBuilder
                     ->select('*')
-                    ->from($contentElement['tablenames'])
-                    ->where(...$ceConstraints);
+                    ->from(self::SYS_FILE_REFERENCE_TABLE)
+                    ->where(...$subConstraints);
+                $contentElements = $subStatement->execute()->fetchAllAssociative() ?? [];
 
-                $contentElementReferences = $ceStatement->execute()->fetchAllAssociative() ?? [];
-                if (count($contentElementReferences) > 0) {
-                    $hasAnyValidReference = true;
-                    // On first hit of a video reference we don't need to check any others.
-                    break;
+                $hasAnyValidReference = false;
+                foreach ($contentElements as $contentElement) {
+                    $ceQueryBuilder = $this->getQueryBuilder($contentElement['tablenames']);
+
+                    $ceConstraints = [];
+                    $ceConstraints[] = $ceQueryBuilder->expr()->eq(
+                        'uid',
+                        $ceQueryBuilder->createNamedParameter($contentElement['uid_foreign'], \PDO::PARAM_INT)
+                    );
+                    $ceConstraints[] = $ceQueryBuilder->expr()->in(
+                        'pid',
+                        $pidListChunk
+                    );
+
+                    $ceStatement = $ceQueryBuilder
+                        ->select('*')
+                        ->from($contentElement['tablenames'])
+                        ->where(...$ceConstraints);
+
+                    $contentElementReferences = $ceStatement->execute()->fetchAllAssociative() ?? [];
+                    if (count($contentElementReferences) > 0) {
+                        $hasAnyValidReference = true;
+                        // On first hit of a video reference we don't need to check any others.
+                        break;
+                    }
                 }
-            }
 
-            // This video has not been referenced in any active content element. It will not be checked.
-            $videos[$videoId]['_hasAnyValidReference'] = $hasAnyValidReference;
+                // This video has not been referenced in any active content element. It will not be checked.
+                $videos[$videoId]['_hasAnyValidReference'] = $hasAnyValidReference;
+            }
         }
     }
 
