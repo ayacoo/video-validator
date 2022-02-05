@@ -50,9 +50,11 @@ you can take care of the corresponding corrections.
 
 ### 3.1 Versions and support
 
-| News        | TYPO3      | PHP       | Support / Development                   |
+| Version     | TYPO3      | PHP       | Support / Development                   |
 | ----------- | ---------- | ----------|---------------------------------------- |
-| 1.x         | 10.x - 11.x| 7.4 - 8.0 | features, bugfixes, security updates    |
+| 2.x         | 10.x - 11.x| 7.4 - 8.0 | features, bugfixes, security updates    |
+
+Hint: Version 1 users should update to version 2
 
 ### 3.2 Release Management
 
@@ -93,41 +95,53 @@ limits.
 Validates a defined number of videos for the defined media extension
 
 ```
-bin/typo3 videoValidator:validate extension limit
+vendor/bin/typo3 videoValidator:validate --extension --limit --referencedOnly=0(default)|1 --referenceRoot=0(default)
 ```
 
 Example:
 
 ```
-bin/typo3 videoValidator:validate Vimeo 10
+vendor/bin/typo3 videoValidator:validate --extension=Vimeo --limit=10
 ```
+
+Example for fetching only videos that are referenced on visible, non-deleted pages within visible, non-deleted references:
+
+```
+vendor/bin/typo3 videoValidator:validate --extension=Vimeo --limit=10 --referencedOnly=1
+```
+
+You can specify the `--referenceRoot` option to specify a PageRoot UID where to search for references. `0` by default means all available roots.
+
+Pay attention to using the right upper/lowercase media extension names (`Youtube` instead of `youtube`), which are defined by the name of the Validator instance.
 
 #### videoValidator:report
 
 Create an email report of Youtube videos from the last 7 days
 
 ```
-bin/typo3 videoValidator:report days receiver extension
+vendor/bin/typo3 videoValidator:report --days --recipients --extension --referencedOnly=0(default)|1 --referenceRoot=0(default)
 ```
 
 Example:
 
 ```
-bin/typo3 videoValidator:report 7 receiver@example.com,receiver2@example.com Youtube
+vendor/bin/typo3 videoValidator:report --days=7 --recipients=receiver@example.com,receiver2@example.com --extension=Youtube
 ```
+
+The same `referencedOnly` and `referenceRoot` options like in `videoValidator:validate` are available.
 
 #### videoValidator:reset
 
 Resets all video states of a media extension.
 
 ```
-bin/typo3 videoValidator:reset extension
+vendor/bin/typo3 videoValidator:reset --extension
 ```
 
 Example:
 
 ```
-bin/typo3 videoValidator:reset Youtube
+vendor/bin/typo3 videoValidator:reset --extension=Youtube
 ```
 
 #### videoValidator:count
@@ -135,13 +149,13 @@ bin/typo3 videoValidator:reset Youtube
 Counts all videos of a media extension. This will help you to decide which limits you can work with.
 
 ```
-bin/typo3 videoValidator:count extension
+vendor/bin/typo3 videoValidator:count --extension
 ```
 
 Example:
 
 ```
-bin/typo3 videoValidator:count Youtube
+vendor/bin/typo3 videoValidator:count --extension=Youtube
 ```
 
 ### 4.2 Register your custom validator
@@ -260,8 +274,8 @@ checks.
 
 ### 4.3 Register your custom report
 
-There is also the possibility to register your own ReportService. For example, instead of sending a mail, you can export
-the video list to an XML or CSV file.
+There is also the possibility to register your own report services. For example, you can export
+the video list to a XML or CSV file. Or maybe sending a slack message?
 
 ### EventListener registration
 
@@ -270,8 +284,8 @@ services:
   Extension\Namespace\Listener\ReportServiceListener:
     tags:
       - name: event.listener
-        identifier: 'extensionkey/reportservice'
-        method: 'setReportService'
+        identifier: 'extensionkey/reportservices'
+        method: 'setReportServices'
         event: Ayacoo\VideoValidator\Event\ModifyReportServiceEvent
 ```
 
@@ -288,10 +302,13 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ReportServiceListener
 {
-    public function setReportService(ModifyReportServiceEvent $event): ModifyReportServiceEvent
+    public function setReportServices(ModifyReportServiceEvent $event): ModifyReportServiceEvent
     {
-        $yourReportService = GeneralUtility::makeInstance(YourReportService::class);
-        $event->setReportService($yourReportService);
+        $yourReportService = GeneralUtility::makeInstance(XmlReportService::class);
+        $reportServices = $event->getReportServices() ?? [];
+        $reportServices['XmlReportService'] = $yourReportService;
+        $event->setReportServices($reportServices);
+
         return $event;
     }
 }
@@ -390,6 +407,7 @@ class YourReportService implements AbstractReportServiceInterface
 Special thanks to Georg Ringer and his [news][3] extension. A good template to build a TYPO3 extension. Here, for
 example, the structure of README.md is used.
 
+Thanks to [Garvin Hicking][5] for adding ReferencedOnly/ReferenceRoot functionality.
 
 [1]: https://getcomposer.org/
 
@@ -398,3 +416,5 @@ example, the structure of README.md is used.
 [3]: https://github.com/georgringer/news
 
 [4]: https://github.com/ayacoo/tiktok
+
+[5]: https://twitter.com/supergarv
