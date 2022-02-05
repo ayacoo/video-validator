@@ -42,7 +42,7 @@
 				<source>End video validation</source>
 			</trans-unit>
 			<trans-unit id="validation.extension.noSupport" resname="validation.extension.noSupport">
-				<source>This extension is not supported'</source>
+				<source>This extension is not supported</source>
 			</trans-unit>
 
 			<trans-unit id="videoService.noVideoValidation" resname="videoService.noVideoValidation">
