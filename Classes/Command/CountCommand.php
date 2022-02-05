@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ayacoo\VideoValidator\Command;
 
+use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
 use Ayacoo\VideoValidator\Domain\Repository\FileRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -57,7 +58,9 @@ class CountCommand extends Command
 
         $allowedExtensions = array_keys($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers'] ?? []);
         if (in_array(strtolower($extension), $allowedExtensions, true)) {
-            $numberOfVideos = count($this->fileRepository->getVideosByExtension($extension, time(), 0));
+            $validatorDemand = new ValidatorDemand();
+            $validatorDemand->setExtension($extension);
+            $numberOfVideos = count($this->fileRepository->getVideosByExtension($validatorDemand, time()));
             $io->info(
                 $this->localizationUtility::translate('count.numberOfVideos', 'video_validator') .
                 ' ' . $extension . ': ' . $numberOfVideos
