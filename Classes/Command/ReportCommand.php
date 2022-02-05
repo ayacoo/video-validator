@@ -45,6 +45,7 @@ class ReportCommand extends Command
             null,
             InputOption::VALUE_REQUIRED,
             'Name of the video extension',
+            ''
         );
         $this->addOption(
             'days',

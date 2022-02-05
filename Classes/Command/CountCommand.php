@@ -27,6 +27,7 @@ class CountCommand extends Command
             null,
             InputOption::VALUE_REQUIRED,
             'e.g. Youtube',
+            ''
         );
     }
 

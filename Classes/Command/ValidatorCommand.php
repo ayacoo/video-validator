@@ -27,12 +27,14 @@ class ValidatorCommand extends Command
             null,
             InputOption::VALUE_REQUIRED,
             'e.g. Youtube',
+            ''
         );
         $this->addOption(
             'limit',
             null,
             InputOption::VALUE_REQUIRED,
             'Number of videos to be checked',
+            10
         );
         $this->addOption(
             'referencedOnly',
