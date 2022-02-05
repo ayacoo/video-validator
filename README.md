@@ -54,6 +54,8 @@ you can take care of the corresponding corrections.
 | ----------- | ---------- | ----------|---------------------------------------- |
 | 2.x         | 10.x - 11.x| 7.4 - 8.0 | features, bugfixes, security updates    |
 
+Hint: Version 1 users should update to version 2
+
 ### 3.2 Release Management
 
 video_validator uses [**semantic versioning**][2], which means, that
