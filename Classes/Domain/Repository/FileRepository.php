@@ -349,7 +349,7 @@ class FileRepository
             ->where(
                 $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($id, \PDO::PARAM_INT))
             )
-            ->executeQuery();
+            ->execute();
 
         $pageIds = [];
         while ($row = $result->fetchAssociative()) {
