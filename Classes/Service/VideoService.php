@@ -24,36 +24,14 @@ class VideoService
 
     public const STATUS_ERROR = 404;
 
-    private ?SymfonyStyle $io;
-
-    private ?EventDispatcherInterface $eventDispatcher;
-
-    private ?FileRepository $fileRepository;
-
-    private ?ResourceFactory $resourceFactory;
-
-    private ?LocalizationUtility $localizationUtility;
-
-    /**
-     * @param SymfonyStyle|null $symfonyStyle
-     * @param EventDispatcherInterface|null $eventDispatcher
-     * @param FileRepository|null $fileRepository
-     * @param ResourceFactory|null $resourceFactory
-     * @param LocalizationUtility|null $localizationUtility
-     */
     public function __construct(
-        SymfonyStyle             $symfonyStyle = null,
-        EventDispatcherInterface $eventDispatcher = null,
-        FileRepository           $fileRepository = null,
-        ResourceFactory          $resourceFactory = null,
-        LocalizationUtility      $localizationUtility = null
+        private SymfonyStyle                      $io,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly FileRepository           $fileRepository,
+        private readonly ResourceFactory          $resourceFactory,
+        private readonly LocalizationUtility      $localizationUtility
     )
     {
-        $this->io = $symfonyStyle;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->fileRepository = $fileRepository;
-        $this->resourceFactory = $resourceFactory;
-        $this->localizationUtility = $localizationUtility;
     }
 
     /**

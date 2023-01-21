@@ -7,20 +7,11 @@ use Ayacoo\VideoValidator\Service\Validator\AbstractVideoValidatorInterface;
 
 final class ModifyValidatorEvent
 {
-    private ?AbstractVideoValidatorInterface $validator;
-
-    private string $extension;
-
-    /**
-     * @param AbstractVideoValidatorInterface|null $validator
-     */
     public function __construct(
-        AbstractVideoValidatorInterface $validator = null,
-        string                          $extension = ''
+        private ?AbstractVideoValidatorInterface $validator,
+        private string                          $extension = ''
     )
     {
-        $this->validator = $validator;
-        $this->extension = $extension;
     }
 
     /**

@@ -17,15 +17,12 @@ class FileRepository
     private const SYS_FILE_TABLE = 'sys_file';
     private const SYS_FILE_REFERENCE_TABLE = 'sys_file_reference';
     private const PAGES_TABLE = 'pages';
-    private ?SiteFinder $siteFinder;
     private int $maxBindParameters = 999;
 
-    /**
-     * @param SiteFinder|null $siteFinder
-     */
-    public function __construct(SiteFinder $siteFinder = null)
+    public function __construct(
+        protected SiteFinder $siteFinder
+    )
     {
-        $this->siteFinder = $siteFinder;
     }
 
     /**

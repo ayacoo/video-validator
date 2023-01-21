@@ -22,17 +22,9 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 class ReportCommand extends Command
 {
-    private ?ResourceFactory $resourceFactory;
-
-    private ?FileRepository $fileRepository;
-
-    private ?LocalizationUtility $localizationUtility;
-
-    private ?EventDispatcherInterface $eventDispatcher;
-
     protected function configure(): void
     {
-        $this->setDescription('Make a video report');
+        $this->setDescription('Send report of video validation for a defined media extension (e.g. YouTube)');
         $this->addOption(
             'recipients',
             null,
@@ -44,7 +36,7 @@ class ReportCommand extends Command
             'extension',
             null,
             InputOption::VALUE_REQUIRED,
-            'Name of the video extension',
+            'Name of the media extension',
             ''
         );
         $this->addOption(
@@ -70,22 +62,13 @@ class ReportCommand extends Command
         );
     }
 
-    /**
-     * @param ResourceFactory|null $resourceFactory
-     * @param FileRepository|null $fileRepository
-     * @param LocalizationUtility|null $localizationUtility
-     */
     public function __construct(
-        ResourceFactory          $resourceFactory = null,
-        FileRepository           $fileRepository = null,
-        LocalizationUtility      $localizationUtility = null,
-        EventDispatcherInterface $eventDispatcher = null
+        protected ResourceFactory          $resourceFactory,
+        protected FileRepository           $fileRepository,
+        protected LocalizationUtility      $localizationUtility,
+        protected EventDispatcherInterface $eventDispatcher
     )
     {
-        $this->resourceFactory = $resourceFactory;
-        $this->fileRepository = $fileRepository;
-        $this->localizationUtility = $localizationUtility;
-        $this->eventDispatcher = $eventDispatcher;
         parent::__construct();
     }
 

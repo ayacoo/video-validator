@@ -5,14 +5,10 @@ namespace Ayacoo\VideoValidator\Event;
 
 final class ModifyReportServiceEvent
 {
-    private array $reportServices;
-
-    /**
-     * @param array $reportServices
-     */
-    public function __construct(array $reportServices = [])
+    public function __construct(
+        private array $reportServices = []
+    )
     {
-        $this->reportServices = $reportServices;
     }
 
     /**

@@ -15,33 +15,23 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 class CountCommand extends Command
 {
-    private ?LocalizationUtility $localizationUtility;
-
-    private ?FileRepository $fileRepository;
-
     protected function configure(): void
     {
-        $this->setDescription('Counts all videos of a media extension');
+        $this->setDescription('Counts all videos of a media extension, e.g. YouTube');
         $this->addOption(
             'extension',
             null,
             InputOption::VALUE_REQUIRED,
-            'e.g. Youtube',
+            'Media Extension (e.g. YouTube)',
             ''
         );
     }
 
-    /**
-     * @param LocalizationUtility|null $localizationUtility
-     * @param FileRepository|null $fileRepository
-     */
     public function __construct(
-        LocalizationUtility $localizationUtility = null,
-        FileRepository      $fileRepository = null
+        protected LocalizationUtility $localizationUtility,
+        protected FileRepository      $fileRepository
     )
     {
-        $this->localizationUtility = $localizationUtility;
-        $this->fileRepository = $fileRepository;
         parent::__construct();
     }
 
