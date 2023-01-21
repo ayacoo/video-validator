@@ -11,26 +11,26 @@ services:
     tags:
       - name: 'console.command'
         command: 'videoValidator:validate'
-        description: 'Video validation of a defined online service (e.g. Youtube)'
+        description: 'Video validation of a defined media extension (e.g. YouTube)'
         schedulable: true
 
   Ayacoo\VideoValidator\Command\ReportCommand:
     tags:
       - name: 'console.command'
         command: 'videoValidator:report'
-        description: 'Send report of video validation for a defined online service (e.g. Youtube)'
+        description: 'Send report of video validation for a defined media extension (e.g. YouTube)'
         schedulable: true
 
   Ayacoo\VideoValidator\Command\ResetCommand:
     tags:
       - name: 'console.command'
         command: 'videoValidator:reset'
-        description: 'Resets all videos of a media extension, e.g. Youtube'
+        description: 'Resets all videos of a media extension, e.g. YouTube'
         schedulable: true
 
   Ayacoo\VideoValidator\Command\CountCommand:
     tags:
       - name: 'console.command'
         command: 'videoValidator:count'
-        description: 'Counts all videos of a media extension, e.g. Youtube'
-        schedulable: true
+        description: 'Counts all videos of a media extension, e.g. YouTube'
+        schedulable: false
