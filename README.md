@@ -2,7 +2,7 @@
 
 ## 1 Features
 
-* Checks if your Youtube or Vimeo videos are still available in the TYPO3 project
+* Checks if your YouTube or Vimeo videos are still available in the TYPO3 project
 * Can send you reports by email
 * Can use a custom report service
 * Can also check more media extensions through flexible extensibility
@@ -26,19 +26,20 @@ fields are added.
 
 ### 2.2 How it works
 
-The extension fetches all files from the sys_file that are linked to this extension based on the extension, e.g.
-Youtube. Thereby a validation_date is considered.
+EXT:video_validator fetches all files from the sys_file table that are linked to this media extension, e.g.
+YouTube. Thereby a validation_date is considered.
 
-If the list is through, a new run begins after 7 days.
+If the video list has been worked through, the videos are checked again by default after 7 days.
+These settings can be overwritten for the respective task.
 
 Using the oEmbed API of the providers, you can read the status of a video without an API key. Private videos are marked
-as faulty, but cannot be saved in TYPO3 anyway. Note the difference between private videos and unlisted videos.
+as faulty, but cannot be saved in TYPO3 anyway. Note the difference between private videos and unlisted videos!
 
 ### 2.3 Supported media extensions
 
-- Youtube
+- YouTube
 - Vimeo
-- Custom media extension, see doc below
+- Custom media extension, see developer doc
 
 ### 2.4 What do I do if a video is not accessible?
 
@@ -73,13 +74,6 @@ requests. This is very helpful to understand what kind of issue the **PR** is go
 **Bugfixes**: Please describe what kind of bug your fix solve and give us feedback how to reproduce the issue. We're
 going to accept only bugfixes if we can reproduce the issue.
 
-### 3.4 Email settings
-
-To define a sender for the email, the configuration ```$GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress']```
-from the Install Tool is used.
-
-Because the FluidEmail is used by TYPO3, you can of course also easily overwrite the template for the status email.
-
 ## 4 Developer corner
 
 ### 4.1 CLI calls
@@ -112,11 +106,11 @@ vendor/bin/typo3 videoValidator:validate --extension=Vimeo --limit=10 --referenc
 
 You can specify the `--referenceRoot` option to specify a PageRoot UID where to search for references. `0` by default means all available roots.
 
-Pay attention to using the right upper/lowercase media extension names (`Youtube` instead of `youtube`), which are defined by the name of the Validator instance.
+Pay attention to using the right upper/lowercase media extension names (`YouTube` instead of `YouTube`), which are defined by the name of the Validator instance.
 
 #### videoValidator:report
 
-Create an email report of Youtube videos from the last 7 days
+Create an email report of YouTube videos from the last 7 days
 
 ```
 vendor/bin/typo3 videoValidator:report --days --recipients --extension --referencedOnly=0(default)|1 --referenceRoot=0(default)
@@ -125,7 +119,7 @@ vendor/bin/typo3 videoValidator:report --days --recipients --extension --referen
 Example:
 
 ```
-vendor/bin/typo3 videoValidator:report --days=7 --recipients=receiver@example.com,receiver2@example.com --extension=Youtube
+vendor/bin/typo3 videoValidator:report --days=7 --recipients=receiver@example.com,receiver2@example.com --extension=YouTube
 ```
 
 The same `referencedOnly` and `referenceRoot` options like in `videoValidator:validate` are available.
@@ -141,7 +135,7 @@ vendor/bin/typo3 videoValidator:reset --extension
 Example:
 
 ```
-vendor/bin/typo3 videoValidator:reset --extension=Youtube
+vendor/bin/typo3 videoValidator:reset --extension=YouTube
 ```
 
 #### videoValidator:count
@@ -155,12 +149,12 @@ vendor/bin/typo3 videoValidator:count --extension
 Example:
 
 ```
-vendor/bin/typo3 videoValidator:count --extension=Youtube
+vendor/bin/typo3 videoValidator:count --extension=YouTube
 ```
 
 ### 4.2 Register your custom validator
 
-This TYPO3 extension is built in such a way that other media extensions can also be checked. For this, the media
+EXT:video_validator is built in such a way that other media extensions can also be checked. For this, the media
 extension must be registered in ```$GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']``` and you must
 register a validator via an event.
 
@@ -402,12 +396,21 @@ class YourReportService implements AbstractReportServiceInterface
 
 ```
 
+### 4.4 Email settings
+
+To define a sender for the email, the configuration ```$GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress']```
+from the Install Tool is used.
+
+Because the FluidEmail is used by TYPO3, you can of course also easily overwrite the template for the status email.
+
 ## 5 Thanks / Notices
 
 Special thanks to Georg Ringer and his [news][3] extension. A good template to build a TYPO3 extension. Here, for
 example, the structure of README.md is used.
 
 Thanks to [Garvin Hicking][5] for adding ReferencedOnly/ReferenceRoot functionality.
+
+And thanks to all who have tested and improved this extension.
 
 [1]: https://getcomposer.org/
 
