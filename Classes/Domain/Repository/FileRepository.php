@@ -25,13 +25,6 @@ class FileRepository
     {
     }
 
-    /**
-     * @param ValidatorDemand $validatorDemand
-     * @param int $validationDate
-     * @return array
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function getVideosByExtension(ValidatorDemand $validatorDemand, int $validationDate = 0): array
     {
         $referencedOnly = $validatorDemand->isReferencedOnly();
@@ -68,13 +61,6 @@ class FileRepository
         return $videos;
     }
 
-    /**
-     * @param ValidatorDemand $validatorDemand
-     * @param int $validationStatus
-     * @return array
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function getVideosForReport(ValidatorDemand $validatorDemand, int $validationStatus = 200): array
     {
         $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
@@ -112,11 +98,7 @@ class FileRepository
         return $videos;
     }
 
-    /**
-     * @param string $extension
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function resetValidationState(string $extension)
+    public function resetValidationState(string $extension): void
     {
         $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
 
@@ -130,15 +112,10 @@ class FileRepository
             );
         $queryBuilder->set('validation_date', 0);
         $queryBuilder->set('validation_status', 0);
-        $queryBuilder->execute();
+        $queryBuilder->executeQuery();
     }
 
-    /**
-     * @param int $fileUid
-     * @param array $properties
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function updatePropertiesByFile(int $fileUid, array $properties = [])
+    public function updatePropertiesByFile(int $fileUid, array $properties = []): void
     {
         $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
 
@@ -153,14 +130,9 @@ class FileRepository
         foreach ($properties as $key => $value) {
             $queryBuilder->set($key, $value);
         }
-        $queryBuilder->execute();
+        $queryBuilder->executeQuery();
     }
 
-    /**
-     * @param string $tableName
-     * @return QueryBuilder
-     * @throws \Doctrine\DBAL\Exception
-     */
     protected function getQueryBuilder(string $tableName = ''): QueryBuilder
     {
         $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
@@ -171,11 +143,6 @@ class FileRepository
         return $connection->createQueryBuilder();
     }
 
-    /**
-     * @param QueryBuilder $queryBuilder
-     * @param string $extension
-     * @return array
-     */
     protected function getDefaultWhereConstraints(QueryBuilder $queryBuilder, string $extension): array
     {
         $whereConstraints = [];
@@ -190,13 +157,6 @@ class FileRepository
         return $whereConstraints;
     }
 
-    /**
-     * @param QueryBuilder $queryBuilder
-     * @param int $limit
-     * @param bool $referencedOnly
-     * @param array $pidList
-     * @return QueryBuilder
-     */
     protected function getStatementForRepository(
         QueryBuilder &$queryBuilder,
         int          $limit,
@@ -237,13 +197,7 @@ class FileRepository
         return $statement;
     }
 
-    /**
-     * @param array $videos
-     * @param array $pidList
-     * @return void
-     * @throws \Doctrine\DBAL\Exception
-     */
-    protected function parseVideosForReferences(array &$videos, array $pidList)
+    protected function parseVideosForReferences(array &$videos, array $pidList): void
     {
         // See above. We need to iterate each referenced file and check the referenced content-element to check its active state.
         // First query: Resolve all table names to fetch. Note that we can get multiple results for one sys_file record, i.e.
@@ -266,7 +220,7 @@ class FileRepository
                 ->select('*')
                 ->from(self::SYS_FILE_REFERENCE_TABLE)
                 ->where(...$subConstraints);
-            $contentElements = $subStatement->execute()->fetchAllAssociative() ?? [];
+            $contentElements = $subStatement->executeQuery()->fetchAllAssociative() ?? [];
 
             $hasAnyValidReference = false;
             foreach ($contentElements as $contentElement) {
@@ -287,7 +241,7 @@ class FileRepository
                     ->from($contentElement['tablenames'])
                     ->where(...$ceConstraints);
 
-                $contentElementReferences = $ceStatement->execute()->fetchAllAssociative() ?? [];
+                $contentElementReferences = $ceStatement->executeQuery()->fetchAllAssociative() ?? [];
                 if (count($contentElementReferences) > 0) {
                     $hasAnyValidReference = true;
                     // On first hit of a video reference we don't need to check any others.
@@ -300,11 +254,6 @@ class FileRepository
         }
     }
 
-    /**
-     * @param int $root
-     * @return array
-     * @throws \Doctrine\DBAL\Exception
-     */
     protected function getPidList(int $root = 0): array
     {
         $roots = [];
@@ -332,6 +281,7 @@ class FileRepository
      * @param int $depth Depth to traverse down the page tree.
      * @param int $begin Determines at which level in the tree to start collecting uid's. Zero means 'start right away', 1 = 'next level and out'
      * @return array Returns the list of pages
+     *
      * @throws \Doctrine\DBAL\Exception
      */
     protected function getPageTreeIds(int $id, int $depth, int $begin): array
@@ -346,7 +296,7 @@ class FileRepository
             ->where(
                 $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($id, \PDO::PARAM_INT))
             )
-            ->execute();
+            ->executeQuery();
 
         $pageIds = [];
         while ($row = $result->fetchAssociative()) {
@@ -360,14 +310,6 @@ class FileRepository
         return $pageIds;
     }
 
-    /**
-     * @param QueryBuilder $queryBuilder
-     * @param bool $referencedOnly
-     * @param array $pidListChunk
-     * @param array $whereConstraints
-     * @return array
-     * @throws \Doctrine\DBAL\Exception
-     */
     protected function getVideosForReportChunk(
         QueryBuilder $queryBuilder,
         bool         $referencedOnly,
@@ -380,7 +322,7 @@ class FileRepository
                 ...$whereConstraints
             );
         }
-        $videos = $statement->execute()->fetchAllAssociative();
+        $videos = $statement->executeQuery()->fetchAllAssociative();
         if ($referencedOnly && count($videos) > 0) {
             $this->parseVideosForReferences($videos, $pidListChunk);
         }
@@ -388,15 +330,6 @@ class FileRepository
         return $videos;
     }
 
-    /**
-     * @param QueryBuilder $queryBuilder
-     * @param ValidatorDemand $validatorDemand
-     * @param bool $referencedOnly
-     * @param array $pidListChunk
-     * @param array $whereConstraints
-     * @return array
-     * @throws \Doctrine\DBAL\Exception
-     */
     protected function getVideosByExtensionChunk(
         QueryBuilder    $queryBuilder,
         ValidatorDemand $validatorDemand,
@@ -415,7 +348,7 @@ class FileRepository
                 ...$whereConstraints
             );
         }
-        $videos = $statement->execute()->fetchAllAssociative();
+        $videos = $statement->executeQuery()->fetchAllAssociative();
         if ($referencedOnly && count($videos) > 0) {
             $this->parseVideosForReferences($videos, $pidListChunk);
         }
