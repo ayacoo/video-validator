@@ -15,19 +15,15 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 class ValidatorCommand extends Command
 {
-    private ?LocalizationUtility $localizationUtility;
-
-    private ?VideoService $videoService;
-
     protected function configure(): void
     {
-        $this->setDescription('Checks online videos in TYPO3 backend for accessibility like Youtube and Vimeo');
+        $this->setDescription('Video validation of a defined media extension (e.g. YouTube)');
         $this->addOption(
             'extension',
             null,
             InputOption::VALUE_REQUIRED,
-            'e.g. Youtube',
-            ''
+            'Media Extension (e.g. YouTube)',
+            'YouTube'
         );
         $this->addOption(
             'limit',
@@ -40,8 +36,8 @@ class ValidatorCommand extends Command
             'referencedOnly',
             null,
             InputOption::VALUE_OPTIONAL,
-            'Whether to only fetch records that are referenced on visible pages and content elements (true/false)',
-            false
+            'Whether to only fetch records that are referenced on visible pages and content elements (1/0)',
+            0
         );
         $this->addOption(
             'referenceRoot',
@@ -52,30 +48,13 @@ class ValidatorCommand extends Command
         );
     }
 
-    /**
-     * @param LocalizationUtility|null $localizationUtility
-     * @param VideoService|null $videoService
-     */
     public function __construct(
-        LocalizationUtility $localizationUtility = null,
-        VideoService        $videoService = null
+        protected LocalizationUtility $localizationUtility,
+        protected VideoService        $videoService
     )
     {
-        $this->localizationUtility = $localizationUtility;
-        $this->videoService = $videoService;
         parent::__construct();
     }
-
-    /**
-     * Executes validator
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
-     * @throws \Doctrine\DBAL\Exception
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);

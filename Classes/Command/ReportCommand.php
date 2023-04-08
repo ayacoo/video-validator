@@ -22,17 +22,9 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 class ReportCommand extends Command
 {
-    private ?ResourceFactory $resourceFactory;
-
-    private ?FileRepository $fileRepository;
-
-    private ?LocalizationUtility $localizationUtility;
-
-    private ?EventDispatcherInterface $eventDispatcher;
-
     protected function configure(): void
     {
-        $this->setDescription('Make a video report');
+        $this->setDescription('Send report of video validation for a defined media extension (e.g. YouTube)');
         $this->addOption(
             'recipients',
             null,
@@ -44,8 +36,8 @@ class ReportCommand extends Command
             'extension',
             null,
             InputOption::VALUE_REQUIRED,
-            'Name of the video extension',
-            ''
+            'Name of the media extension',
+            'YouTube'
         );
         $this->addOption(
             'days',
@@ -58,8 +50,8 @@ class ReportCommand extends Command
             'referencedOnly',
             null,
             InputOption::VALUE_OPTIONAL,
-            'Whether to only fetch records that are referenced on visible pages and content elements (true/false)',
-            false
+            'Whether to only fetch records that are referenced on visible pages and content elements (1/0)',
+            0
         );
         $this->addOption(
             'referenceRoot',
@@ -70,36 +62,16 @@ class ReportCommand extends Command
         );
     }
 
-    /**
-     * @param ResourceFactory|null $resourceFactory
-     * @param FileRepository|null $fileRepository
-     * @param LocalizationUtility|null $localizationUtility
-     */
     public function __construct(
-        ResourceFactory          $resourceFactory = null,
-        FileRepository           $fileRepository = null,
-        LocalizationUtility      $localizationUtility = null,
-        EventDispatcherInterface $eventDispatcher = null
+        protected ResourceFactory          $resourceFactory,
+        protected FileRepository           $fileRepository,
+        protected LocalizationUtility      $localizationUtility,
+        protected EventDispatcherInterface $eventDispatcher
     )
     {
-        $this->resourceFactory = $resourceFactory;
-        $this->fileRepository = $fileRepository;
-        $this->localizationUtility = $localizationUtility;
-        $this->eventDispatcher = $eventDispatcher;
         parent::__construct();
     }
 
-    /**
-     * Generates video report
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     * @throws FileDoesNotExistException
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \Doctrine\DBAL\Exception
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -164,14 +136,6 @@ class ReportCommand extends Command
         return Command::SUCCESS;
     }
 
-    /**
-     * @param ValidatorDemand $validatorDemand
-     * @param int $status
-     * @return array
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
-     * @throws \Doctrine\DBAL\Exception
-     */
     protected function getVideosByStatus(ValidatorDemand $validatorDemand, int $status): array
     {
         $videos = [];
@@ -180,7 +144,7 @@ class ReportCommand extends Command
             try {
                 $file = $this->resourceFactory->getFileObject($video['uid']);
                 $videos[] = $file;
-            } catch (FileDoesNotExistException $e) {
+            } catch (FileDoesNotExistException) {
             }
         }
 

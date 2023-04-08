@@ -15,43 +15,26 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 class ResetCommand extends Command
 {
-    private ?LocalizationUtility $localizationUtility;
-
-    private ?FileRepository $fileRepository;
-
     protected function configure(): void
     {
-        $this->setDescription('Resets all video states of a media extension');
+        $this->setDescription('Resets all videos of a media extension, e.g. YouTube');
         $this->addOption(
             'extension',
             null,
             InputOption::VALUE_REQUIRED,
-            'e.g. Youtube',
-            ''
+            'Media Extension (e.g. YouTube)',
+            'YouTube'
         );
     }
 
-    /**
-     * @param LocalizationUtility|null $localizationUtility
-     * @param FileRepository|null $fileRepository
-     */
     public function __construct(
-        LocalizationUtility $localizationUtility = null,
-        FileRepository      $fileRepository = null
+        protected LocalizationUtility $localizationUtility,
+        protected FileRepository      $fileRepository
     )
     {
-        $this->localizationUtility = $localizationUtility;
-        $this->fileRepository = $fileRepository;
         parent::__construct();
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);

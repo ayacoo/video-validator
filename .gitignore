@@ -1,0 +1,8 @@
+/.Build
+/Build/Local/.phpunit.result.cache
+/composer.lock
+/.php_cs.cache
+/Documentation-GENERATED-temp
+/Tests/Build/.phpunit.result.cache
+.DS_Store
+/.idea

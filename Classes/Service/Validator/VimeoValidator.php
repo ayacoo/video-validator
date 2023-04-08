@@ -12,12 +12,9 @@ class VimeoValidator extends AbstractVideoValidator implements AbstractVideoVali
 {
     private VimeoHelper $vimeoHelper;
 
-    /**
-     * @param string $extension
-     */
     public function __construct(string $extension = '')
     {
-        $this->vimeoHelper = GeneralUtility::makeInstance(VimeoHelper::class, strtolower($extension));
+        $this->vimeoHelper = GeneralUtility::makeInstance(VimeoHelper::class, $extension);
     }
 
     /**
@@ -37,19 +34,11 @@ class VimeoValidator extends AbstractVideoValidator implements AbstractVideoVali
         );
     }
 
-    /**
-     * @param File $file
-     * @return string
-     */
     public function getOnlineMediaId(File $file): string
     {
         return $this->vimeoHelper->getOnlineMediaId($file);
     }
 
-    /**
-     * @param string $mediaId
-     * @return string
-     */
     public function buildUrl(string $mediaId): string
     {
         return 'https://vimeo.com/' . $mediaId;
