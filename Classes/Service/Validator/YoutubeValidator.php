@@ -8,16 +8,13 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\YouTubeHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class YoutubeValidator extends AbstractVideoValidator implements AbstractVideoValidatorInterface
+class YouTubeValidator extends AbstractVideoValidator implements AbstractVideoValidatorInterface
 {
     private YouTubeHelper $youtubeHelper;
 
-    /**
-     * @param string $extension
-     */
     public function __construct(string $extension = '')
     {
-        $this->youtubeHelper = GeneralUtility::makeInstance(YouTubeHelper::class, strtolower($extension));
+        $this->youtubeHelper = GeneralUtility::makeInstance(YouTubeHelper::class, $extension);
     }
 
     /**
@@ -37,19 +34,11 @@ class YoutubeValidator extends AbstractVideoValidator implements AbstractVideoVa
         );
     }
 
-    /**
-     * @param File $file
-     * @return string
-     */
     public function getOnlineMediaId(File $file): string
     {
         return $this->youtubeHelper->getOnlineMediaId($file);
     }
 
-    /**
-     * @param string $mediaId
-     * @return string
-     */
     public function buildUrl(string $mediaId): string
     {
         return 'https://www.youtube.com/watch?v=' . $mediaId;

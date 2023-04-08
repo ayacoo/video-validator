@@ -2,10 +2,13 @@ services:
   _defaults:
     autowire: true
     autoconfigure: true
-    public: true
+    public: false
 
   Ayacoo\VideoValidator\:
+    public: true
     resource: '../Classes/*'
+    exclude:
+      - '../Classes/Domain/Model/*'
 
   Ayacoo\VideoValidator\Command\ValidatorCommand:
     tags:

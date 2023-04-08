@@ -37,7 +37,7 @@ class ReportCommand extends Command
             null,
             InputOption::VALUE_REQUIRED,
             'Name of the media extension',
-            ''
+            'YouTube'
         );
         $this->addOption(
             'days',
@@ -50,8 +50,8 @@ class ReportCommand extends Command
             'referencedOnly',
             null,
             InputOption::VALUE_OPTIONAL,
-            'Whether to only fetch records that are referenced on visible pages and content elements (true/false)',
-            false
+            'Whether to only fetch records that are referenced on visible pages and content elements (1/0)',
+            0
         );
         $this->addOption(
             'referenceRoot',
@@ -72,17 +72,6 @@ class ReportCommand extends Command
         parent::__construct();
     }
 
-    /**
-     * Generates video report
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     * @throws FileDoesNotExistException
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \Doctrine\DBAL\Exception
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -147,14 +136,6 @@ class ReportCommand extends Command
         return Command::SUCCESS;
     }
 
-    /**
-     * @param ValidatorDemand $validatorDemand
-     * @param int $status
-     * @return array
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
-     * @throws \Doctrine\DBAL\Exception
-     */
     protected function getVideosByStatus(ValidatorDemand $validatorDemand, int $status): array
     {
         $videos = [];
@@ -163,7 +144,7 @@ class ReportCommand extends Command
             try {
                 $file = $this->resourceFactory->getFileObject($video['uid']);
                 $videos[] = $file;
-            } catch (FileDoesNotExistException $e) {
+            } catch (FileDoesNotExistException) {
             }
         }
 

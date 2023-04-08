@@ -255,19 +255,11 @@ class TiktokValidator extends AbstractVideoValidator implements AbstractVideoVal
 
     private string $username;
 
-    /**
-     * @param string $extension
-     */
     public function __construct(string $extension)
     {
         $this->tiktokHelper = GeneralUtility::makeInstance(TiktokHelper::class, $extension);
     }
 
-    /**
-     * @param string $mediaId
-     * @param string $format
-     * @return string
-     */
     public function getOEmbedUrl(string $mediaId, string $format = 'json'): string
     {
         return sprintf(
@@ -276,20 +268,12 @@ class TiktokValidator extends AbstractVideoValidator implements AbstractVideoVal
         );
     }
 
-    /**
-     * @param File $file
-     * @return string
-     */
     public function getOnlineMediaId(File $file): string
     {
         $this->username = $file->getProperty('tiktok_username') ?? '';
         return $this->tiktokHelper->getOnlineMediaId($file);
     }
 
-    /**
-     * @param string $mediaId
-     * @return string
-     */
     public function buildUrl(string $mediaId): string
     {
         return 'https://www.tiktok.com/@' . $this->username . '/' . $mediaId;
@@ -382,49 +366,31 @@ class YourReportService implements AbstractReportServiceInterface
     // Have a look for the necessary functions
     // The ReportCommand gives you the video array
 
-    /**
-     * @return array
-     */
     public function getSettings(): array
     {
         return $this->settings;
     }
 
-    /**
-     * @param array $settings
-     */
     public function setSettings(array $settings): void
     {
         $this->settings = $settings;
     }
 
-    /**
-     * @return array
-     */
     public function getValidVideos(): array
     {
         return $this->validVideos;
     }
 
-    /**
-     * @param array $validVideos
-     */
     public function setValidVideos(array $validVideos): void
     {
         $this->validVideos = $validVideos;
     }
 
-    /**
-     * @return array
-     */
     public function getInvalidVideos(): array
     {
         return $this->invalidVideos;
     }
 
-    /**
-     * @param array $invalidVideos
-     */
     public function setInvalidVideos(array $invalidVideos): void
     {
         $this->invalidVideos = $invalidVideos;
@@ -442,7 +408,11 @@ from the Install Tool is used.
 Because the FluidEmail is used by TYPO3, you can of course also easily overwrite
 the template for the status email.
 
-## 6 Thanks / Notices
+## 6 Support
+
+If you are happy with the extension and would like to support it in any way, I would appreciate the support of social institutions.
+
+## 7 Thanks / Notices
 
 Special thanks to Georg Ringer and his [news][3] extension. A good template to
 build a TYPO3 extension. Here, for

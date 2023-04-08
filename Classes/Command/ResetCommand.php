@@ -23,14 +23,10 @@ class ResetCommand extends Command
             null,
             InputOption::VALUE_REQUIRED,
             'Media Extension (e.g. YouTube)',
-            ''
+            'YouTube'
         );
     }
 
-    /**
-     * @param LocalizationUtility|null $localizationUtility
-     * @param FileRepository|null $fileRepository
-     */
     public function __construct(
         protected LocalizationUtility $localizationUtility,
         protected FileRepository      $fileRepository
@@ -39,13 +35,6 @@ class ResetCommand extends Command
         parent::__construct();
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);

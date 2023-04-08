@@ -23,7 +23,7 @@ class CountCommand extends Command
             null,
             InputOption::VALUE_REQUIRED,
             'Media Extension (e.g. YouTube)',
-            ''
+            'YouTube'
         );
     }
 
@@ -35,13 +35,6 @@ class CountCommand extends Command
         parent::__construct();
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);

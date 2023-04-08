@@ -18,9 +18,6 @@ class EmailReportService implements AbstractReportServiceInterface
 
     protected array $invalidVideos = [];
 
-    /**
-     * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
-     */
     public function makeReport(): void
     {
         $subject = 'TYPO3 ' . $this->settings['extension'] . ' validation report';
@@ -37,7 +34,7 @@ class EmailReportService implements AbstractReportServiceInterface
             ->assign('referenceRoot', $this->settings['referenceRoot'])
             ->assign('invalidVideos', $this->getInvalidVideos())
             ->assign('validVideos', $this->getValidVideos());
-        // Fix for scheduler
+        // Fix for EXT:scheduler
         if ($GLOBALS['TYPO3_REQUEST'] ?? '' instanceof ServerRequestInterface) {
             $email->setRequest($GLOBALS['TYPO3_REQUEST']);
         }
@@ -47,49 +44,31 @@ class EmailReportService implements AbstractReportServiceInterface
         }
     }
 
-    /**
-     * @return array
-     */
     public function getSettings(): array
     {
         return $this->settings;
     }
 
-    /**
-     * @param array $settings
-     */
     public function setSettings(array $settings): void
     {
         $this->settings = $settings;
     }
 
-    /**
-     * @return array
-     */
     public function getValidVideos(): array
     {
         return $this->validVideos;
     }
 
-    /**
-     * @param array $validVideos
-     */
     public function setValidVideos(array $validVideos): void
     {
         $this->validVideos = $validVideos;
     }
 
-    /**
-     * @return array
-     */
     public function getInvalidVideos(): array
     {
         return $this->invalidVideos;
     }
 
-    /**
-     * @param array $invalidVideos
-     */
     public function setInvalidVideos(array $invalidVideos): void
     {
         $this->invalidVideos = $invalidVideos;
