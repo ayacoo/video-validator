@@ -41,6 +41,11 @@
 			"Ayacoo\\VideoValidator\\": "Classes/"
 		}
 	},
+	"autoload-dev": {
+		"psr-4": {
+			"Ayacoo\\VideoValidator\\Tests\\": "Tests"
+		}
+	},
 	"replace": {
 		"typo3-ter/video-validator": "self.version"
 	},

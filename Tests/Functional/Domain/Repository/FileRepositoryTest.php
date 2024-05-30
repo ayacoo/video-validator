@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Ayacoo\VideoValidator\Tests\Functional\Domain\Repository;
+
 use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
 use Ayacoo\VideoValidator\Domain\Repository\FileRepository;
 use Ayacoo\VideoValidator\Service\VideoService;
