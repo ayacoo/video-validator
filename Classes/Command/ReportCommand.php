@@ -63,12 +63,11 @@ class ReportCommand extends Command
     }
 
     public function __construct(
-        protected ResourceFactory          $resourceFactory,
-        protected FileRepository           $fileRepository,
-        protected LocalizationUtility      $localizationUtility,
+        protected ResourceFactory $resourceFactory,
+        protected FileRepository $fileRepository,
+        protected LocalizationUtility $localizationUtility,
         protected EventDispatcherInterface $eventDispatcher
-    )
-    {
+    ) {
         parent::__construct();
     }
 
@@ -86,7 +85,7 @@ class ReportCommand extends Command
         $validatorDemand->setReferenceRoot((int)$input->getOption('referenceRoot'));
 
         $sender = $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'] ?? '';
-        if (empty($sender)) {
+        if ($sender !== '') {
             $io->warning(
                 $this->localizationUtility::translate('report.validMailAddress', 'video_validator')
             );
@@ -112,7 +111,7 @@ class ReportCommand extends Command
                         'days' => $validatorDemand->getDays(),
                         'recipients' => $validatorDemand->getRecipients(),
                         'referencedOnly' => $validatorDemand->isReferencedOnly(),
-                        'referenceRoot' => $validatorDemand->getReferenceRoot()
+                        'referenceRoot' => $validatorDemand->getReferenceRoot(),
                     ]);
                     $reportService->setValidVideos($validVideos);
                     $reportService->setInvalidVideos($invalidVideos);
@@ -145,6 +144,7 @@ class ReportCommand extends Command
                 $file = $this->resourceFactory->getFileObject($video['uid']);
                 $videos[] = $file;
             } catch (FileDoesNotExistException) {
+                $videos = [];
             }
         }
 

@@ -78,10 +78,11 @@ you can take care of the corresponding corrections.
 
 ### 4.1 Versions and support
 
-| Version | TYPO3       | PHP       | Support / Development                   |
-|---------|-------------|-----------|---------------------------------------- |
-| 3.x     | 12.x  | 8.1      | features, bugfixes, security updates    |
-| 2.x     | 10.x - 11.x | 7.4 - 8.0 | bugfixes, security updates    |
+| Version | TYPO3       | PHP       | Support / Development                |
+|---------|-------------|-----------|--------------------------------------|
+| 4.x     | 13.x        | 8.2 - 8.3 | features, bugfixes, security updates |
+| 3.x     | 12.x        | 8.1       | bugfixes, security updates           |
+| 2.x     | 10.x - 11.x | 7.4 - 8.0 | bugfixes, security updates           |
 
 Hint: Version 1 users should update to version 2
 
@@ -410,7 +411,8 @@ the template for the status email.
 
 ## 6 Support
 
-If you are happy with the extension and would like to support it in any way, I would appreciate the support of social institutions.
+If you are happy with the extension and would like to support it in any way, I
+would appreciate the support of social institutions.
 
 ## 7 Thanks / Notices
 

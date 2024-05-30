@@ -6,7 +6,6 @@ namespace Ayacoo\VideoValidator\Command;
 
 use Ayacoo\VideoValidator\Domain\Repository\FileRepository;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,9 +28,8 @@ class ResetCommand extends Command
 
     public function __construct(
         protected LocalizationUtility $localizationUtility,
-        protected FileRepository      $fileRepository
-    )
-    {
+        protected FileRepository $fileRepository
+    ) {
         parent::__construct();
     }
 

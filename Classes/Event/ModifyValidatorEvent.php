@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Ayacoo\VideoValidator\Event;
@@ -9,9 +10,8 @@ final class ModifyValidatorEvent
 {
     public function __construct(
         private ?AbstractVideoValidatorInterface $validator,
-        private string                           $extension = ''
-    )
-    {
+        private string $extension = ''
+    ) {
     }
 
     public function getValidator(): ?AbstractVideoValidatorInterface

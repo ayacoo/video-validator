@@ -26,12 +26,11 @@ class VideoService
 
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly FileRepository           $fileRepository,
-        private readonly ResourceFactory          $resourceFactory,
-        private readonly LocalizationUtility      $localizationUtility,
-        private ?SymfonyStyle                     $io = null,
-    )
-    {
+        private readonly FileRepository $fileRepository,
+        private readonly ResourceFactory $resourceFactory,
+        private readonly LocalizationUtility $localizationUtility,
+        private ?SymfonyStyle $io = null,
+    ) {
     }
 
     public function getIo(): ?SymfonyStyle
@@ -58,7 +57,8 @@ class VideoService
             $this->io->warning(
                 sprintf(
                     $this->localizationUtility::translate(
-                        'videoService.noVideoValidation', 'video_validator'
+                        'videoService.noVideoValidation',
+                        'video_validator'
                     ),
                     $validatorDemand->getExtension()
                 )
@@ -67,7 +67,8 @@ class VideoService
             $this->io->error(
                 sprintf(
                     $this->localizationUtility::translate(
-                        'videoService.noValidatorFound', 'video_validator'
+                        'videoService.noValidatorFound',
+                        'video_validator'
                     ),
                     $validatorDemand->getExtension()
                 )
@@ -75,6 +76,7 @@ class VideoService
         } else {
             $this->io->progressStart($numberOfVideos);
             foreach ($videos as $video) {
+                $properties = [];
                 $this->io->newLine(2);
 
                 $file = $this->resourceFactory->getFileObject($video['uid']);
@@ -82,7 +84,7 @@ class VideoService
 
                 $title = $file->getProperty('title') ?? '';
                 $message = $validatorDemand->getExtension() . ' Video ' . $title;
-                if (empty($mediaId)) {
+                if ($mediaId !== '') {
                     $this->io->warning(
                         $message . $this->localizationUtility::translate(
                             'videoService.status.noMediaId',
@@ -107,7 +109,8 @@ class VideoService
                     );
                     $properties['validation_status'] = self::STATUS_SUCCESS;
                 } else {
-                    $this->io->error($message . $this->localizationUtility::translate(
+                    $this->io->error(
+                        $message . $this->localizationUtility::translate(
                             'videoService.status.error',
                             'video_validator'
                         )
@@ -122,7 +125,7 @@ class VideoService
                         ['File UID: ' . $video['uid']],
                         ['Title: ' . $file->getProperty('title') ?? 'No title'],
                         ['Identifier: ' . $file->getIdentifier()],
-                        ['URL: ' . $validator->buildUrl($mediaId)]
+                        ['URL: ' . $validator->buildUrl($mediaId)],
                     ]
                 );
 
@@ -134,8 +137,8 @@ class VideoService
     }
 
     /**
-     * There is direct support for the core media extensions YouTube and Vimeo. Other media extensions can be overwritten
-     * via event. More about this in the README.md
+     * There is direct support for the core media extensions YouTube and Vimeo.
+     * Other media extensions can be overwritten via event. More about this in the README.md
      *
      * @param ValidatorDemand $validatorDemand
      * @return AbstractVideoValidatorInterface|null
