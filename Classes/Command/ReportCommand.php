@@ -84,8 +84,8 @@ class ReportCommand extends Command
         $validatorDemand->setReferencedOnly((bool)$input->getOption('referencedOnly'));
         $validatorDemand->setReferenceRoot((int)$input->getOption('referenceRoot'));
 
-        $sender = $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'] ?? '';
-        if ($sender !== '') {
+        $sender = trim($GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'] ?? '');
+        if ($sender === '') {
             $io->warning(
                 $this->localizationUtility::translate('report.validMailAddress', 'video_validator')
             );

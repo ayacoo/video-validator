@@ -43,7 +43,7 @@ class VideoService
         $this->io = $io;
     }
 
-    public function validate(ValidatorDemand $validatorDemand)
+    public function validate(ValidatorDemand $validatorDemand): void
     {
         $validator = $this->getValidator($validatorDemand);
 
@@ -80,11 +80,11 @@ class VideoService
                 $this->io->newLine(2);
 
                 $file = $this->resourceFactory->getFileObject($video['uid']);
-                $mediaId = $validator->getOnlineMediaId($file);
+                $mediaId = $validator->getOnlineMediaId($file) ?? '';
 
                 $title = $file->getProperty('title') ?? '';
                 $message = $validatorDemand->getExtension() . ' Video ' . $title;
-                if ($mediaId !== '') {
+                if ($mediaId === '') {
                     $this->io->warning(
                         $message . $this->localizationUtility::translate(
                             'videoService.status.noMediaId',
