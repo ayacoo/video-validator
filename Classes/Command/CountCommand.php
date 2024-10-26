@@ -29,9 +29,8 @@ class CountCommand extends Command
 
     public function __construct(
         protected LocalizationUtility $localizationUtility,
-        protected FileRepository      $fileRepository
-    )
-    {
+        protected FileRepository $fileRepository
+    ) {
         parent::__construct();
     }
 

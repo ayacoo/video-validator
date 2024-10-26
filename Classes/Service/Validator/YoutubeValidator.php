@@ -8,7 +8,7 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\YouTubeHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class YoutubeValidator extends AbstractVideoValidator implements AbstractVideoValidatorInterface
+class YoutubeValidator extends AbstractVideoValidator
 {
     private YouTubeHelper $youtubeHelper;
 

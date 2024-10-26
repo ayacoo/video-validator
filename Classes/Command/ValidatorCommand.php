@@ -50,9 +50,8 @@ class ValidatorCommand extends Command
 
     public function __construct(
         protected LocalizationUtility $localizationUtility,
-        protected VideoService        $videoService
-    )
-    {
+        protected VideoService $videoService
+    ) {
         parent::__construct();
     }
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -62,7 +61,7 @@ class ValidatorCommand extends Command
 
         $allowedExtensions = array_keys($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers'] ?? []);
         if (in_array(strtolower($extension), $allowedExtensions, true)) {
-            if ($input->getOption('referencedOnly')) {
+            if ((bool)$input->getOption('referencedOnly')) {
                 $io->info(
                     $this->localizationUtility::translate('validation.startReferencedOnly', 'video_validator')
                 );

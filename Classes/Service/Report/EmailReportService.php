@@ -73,5 +73,4 @@ class EmailReportService implements AbstractReportServiceInterface
     {
         $this->invalidVideos = $invalidVideos;
     }
-
 }

@@ -8,7 +8,7 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\VimeoHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class VimeoValidator extends AbstractVideoValidator implements AbstractVideoValidatorInterface
+class VimeoValidator extends AbstractVideoValidator
 {
     private VimeoHelper $vimeoHelper;
 

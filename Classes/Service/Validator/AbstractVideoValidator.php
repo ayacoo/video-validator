@@ -6,7 +6,7 @@ namespace Ayacoo\VideoValidator\Service\Validator;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class AbstractVideoValidator
+abstract class AbstractVideoValidator implements AbstractVideoValidatorInterface
 {
     /**
      * @param $mediaId
