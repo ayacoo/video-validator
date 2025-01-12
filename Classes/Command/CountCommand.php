@@ -43,7 +43,6 @@ class CountCommand extends Command
         if (in_array(strtolower($extension), $allowedExtensions, true)) {
             $validatorDemand = new ValidatorDemand();
             $validatorDemand->setExtension($extension);
-            $validatorDemand->setLimit(0);
             $numberOfVideos = count($this->fileRepository->getVideosByExtension($validatorDemand, time()));
             $io->info(
                 $this->localizationUtility::translate('count.numberOfVideos', 'video_validator') .
