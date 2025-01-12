@@ -400,7 +400,46 @@ class YourReportService implements AbstractReportServiceInterface
 
 ```
 
-### 5.4 Email settings
+### 5.4 Register your custom validate action
+
+It is also possible to register your own actions during validation. For example,
+You can disable referenced content items.
+
+### EventListener registration
+
+```
+services:
+  Extension\Namespace\Listener\VideoValidateListener:
+    tags:
+      - name: event.listener
+        identifier: 'extensionkey/videovalidator'
+        event: Ayacoo\VideoValidator\Event\ModifyVideoValidateEvent
+```
+
+### EventListener
+
+```
+<?php
+declare(strict_types=1);
+
+namespace Extension\Namespace\Listener;
+
+use Ayacoo\VideoValidator\Event\ModifyReportServiceEvent;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
+class VideoValidateListener
+{
+    public function dispatch(ModifyVideoValidateEvent $event): void
+    {
+        $file = $event->getFile();
+        $properties = $event->getProperties();
+        // Do your custom stuff e.g. custom action
+    }
+}
+
+```
+
+### 5.5 Email settings
 
 To define a sender for the email, the
 configuration ```$GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress']```
