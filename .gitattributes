@@ -7,6 +7,7 @@
 /.github/ export-ignore
 /.gitignore export-ignore
 /.gitlab/ export-ignore
+/.php-cs-fixer.cache export-ignore
 /.php-cs-fixer.php export-ignore
 /.phpstorm.meta.php export-ignore
 /.prettierrc.js export-ignore
