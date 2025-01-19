@@ -429,7 +429,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class VideoValidateListener
 {
-    public function dispatch(ModifyVideoValidateEvent $event): void
+    public function __invoke(ModifyVideoValidateEvent $event): void
     {
         $file = $event->getFile();
         $properties = $event->getProperties();
