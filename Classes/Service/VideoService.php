@@ -10,7 +10,7 @@ use Ayacoo\VideoValidator\Event\ModifyValidatorEvent;
 use Ayacoo\VideoValidator\Event\ModifyVideoValidateEvent;
 use Ayacoo\VideoValidator\Service\Validator\AbstractVideoValidatorInterface;
 use Ayacoo\VideoValidator\Service\Validator\VimeoValidator;
-use Ayacoo\VideoValidator\Service\Validator\YouTubeValidator;
+use Ayacoo\VideoValidator\Service\Validator\YoutubeValidator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
@@ -150,7 +150,7 @@ class VideoService
     {
         $extension = strtolower($validatorDemand->getExtension());
         $validator = match ($extension) {
-            'youtube' => GeneralUtility::makeInstance(YouTubeValidator::class, $extension),
+            'youtube' => GeneralUtility::makeInstance(YoutubeValidator::class, $extension),
             'vimeo' => GeneralUtility::makeInstance(VimeoValidator::class, $extension)
         };
 
