@@ -112,7 +112,7 @@ class FileRepository
             );
         $queryBuilder->set('validation_date', 0);
         $queryBuilder->set('validation_status', 0);
-        $queryBuilder->executeQuery();
+        $queryBuilder->executeStatement();
     }
 
     public function updatePropertiesByFile(int $fileUid, array $properties = []): void
@@ -130,7 +130,7 @@ class FileRepository
         foreach ($properties as $key => $value) {
             $queryBuilder->set($key, $value);
         }
-        $queryBuilder->executeQuery();
+        $queryBuilder->executeStatement();
     }
 
     protected function getQueryBuilder(string $tableName = ''): QueryBuilder

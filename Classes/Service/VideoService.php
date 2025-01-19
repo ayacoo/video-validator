@@ -7,6 +7,7 @@ namespace Ayacoo\VideoValidator\Service;
 use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
 use Ayacoo\VideoValidator\Domain\Repository\FileRepository;
 use Ayacoo\VideoValidator\Event\ModifyValidatorEvent;
+use Ayacoo\VideoValidator\Event\ModifyVideoValidateEvent;
 use Ayacoo\VideoValidator\Service\Validator\AbstractVideoValidatorInterface;
 use Ayacoo\VideoValidator\Service\Validator\VimeoValidator;
 use Ayacoo\VideoValidator\Service\Validator\YouTubeValidator;
@@ -127,6 +128,11 @@ class VideoService
                 );
 
                 $this->fileRepository->updatePropertiesByFile($video['uid'], $properties);
+
+                // You want a special action after validation? Have a look at the documentation!
+                $event = new ModifyVideoValidateEvent($file, $properties);
+                $this->eventDispatcher->dispatch($event);
+
                 $this->io->progressAdvance(1);
             }
             $this->io->progressFinish();
