@@ -424,7 +424,7 @@ declare(strict_types=1);
 
 namespace Extension\Namespace\Listener;
 
-use Ayacoo\VideoValidator\Event\ModifyReportServiceEvent;
+use Ayacoo\VideoValidator\Event\ModifyVideoValidateEvent;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class VideoValidateListener
