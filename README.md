@@ -80,7 +80,7 @@ you can take care of the corresponding corrections.
 
 | Version | TYPO3       | PHP       | Support / Development                   |
 |---------|-------------|-----------|---------------------------------------- |
-| 3.x     | 12.x  | 8.1      | features, bugfixes, security updates    |
+| 3.x     | 12.x  | 8.1 - 8.4      | features, bugfixes, security updates    |
 | 2.x     | 10.x - 11.x | 7.4 - 8.0 | bugfixes, security updates    |
 
 Hint: Version 1 users should update to version 2
