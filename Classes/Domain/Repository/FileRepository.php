@@ -317,7 +317,7 @@ class FileRepository
                 )
             )
             ->executeQuery();
-        $rows = $result->fetchAssociative();
+        $rows = $result->fetchAllAssociative();
 
         $pageIds = [];
         foreach ($rows as $row) {
