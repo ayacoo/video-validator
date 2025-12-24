@@ -18,6 +18,6 @@ abstract class AbstractVideoValidator implements AbstractVideoValidatorInterface
             $this->getOEmbedUrl($mediaId)
         );
 
-        return is_string($oEmbed) ?? false;
+        return is_string($oEmbed);
     }
 }
