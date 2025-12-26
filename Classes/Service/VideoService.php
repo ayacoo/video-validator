@@ -9,12 +9,10 @@ use Ayacoo\VideoValidator\Domain\Repository\FileRepository;
 use Ayacoo\VideoValidator\Event\ModifyValidatorEvent;
 use Ayacoo\VideoValidator\Event\ModifyVideoValidateEvent;
 use Ayacoo\VideoValidator\Service\Validator\AbstractVideoValidatorInterface;
-use Ayacoo\VideoValidator\Service\Validator\VimeoValidator;
-use Ayacoo\VideoValidator\Service\Validator\YoutubeValidator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 class VideoService
@@ -30,6 +28,8 @@ class VideoService
         private readonly FileRepository $fileRepository,
         private readonly ResourceFactory $resourceFactory,
         private readonly LocalizationUtility $localizationUtility,
+        #[AutowireIterator('video_validator.validator', indexAttribute: 'extension')]
+        private readonly iterable $validator,
         private ?SymfonyStyle $io = null,
     ) {
     }
@@ -152,10 +152,13 @@ class VideoService
     protected function getValidator(ValidatorDemand $validatorDemand): ?AbstractVideoValidatorInterface
     {
         $extension = strtolower($validatorDemand->getExtension());
-        $validator = match ($extension) {
-            'youtube' => GeneralUtility::makeInstance(YoutubeValidator::class, $extension),
-            'vimeo' => GeneralUtility::makeInstance(VimeoValidator::class, $extension)
-        };
+        $validator = null;
+        foreach ($this->validator as $validatorKey => $currentValidator) {
+            if ($validatorKey === $extension) {
+                $validator = $currentValidator;
+                break;
+            }
+        }
 
         $modifyValidatorEvent = $this->eventDispatcher->dispatch(
             new ModifyValidatorEvent($validator, $extension)
