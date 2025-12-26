@@ -10,21 +10,26 @@ use Ayacoo\VideoValidator\Event\ModifyReportServiceEvent;
 use Ayacoo\VideoValidator\Service\Report\EmailReportService;
 use Ayacoo\VideoValidator\Service\VideoService;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
+#[AsCommand('videoValidator:report', 'Send report of video validation for a defined media extension (e.g. YouTube)')]
 class ReportCommand extends Command
 {
     protected function configure(): void
     {
-        $this->setDescription('Send report of video validation for a defined media extension (e.g. YouTube)');
         $this->addOption(
             'recipients',
             null,
@@ -66,7 +71,8 @@ class ReportCommand extends Command
         protected ResourceFactory $resourceFactory,
         protected FileRepository $fileRepository,
         protected LocalizationUtility $localizationUtility,
-        protected EventDispatcherInterface $eventDispatcher
+        protected EventDispatcherInterface $eventDispatcher,
+        protected FlashMessageService $flashMessageService
     ) {
         parent::__construct();
     }
@@ -86,9 +92,9 @@ class ReportCommand extends Command
 
         $sender = trim($GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'] ?? '');
         if ($sender === '') {
-            $io->warning(
-                $this->localizationUtility::translate('report.validMailAddress', 'video_validator')
-            );
+            $message = $this->localizationUtility::translate('report.validMailAddress', 'video_validator');
+            $io->warning($message);
+            $this->addFlashMessage($message, ContextualFeedbackSeverity::WARNING);
             return 0;
         }
 
@@ -122,17 +128,30 @@ class ReportCommand extends Command
                     $this->localizationUtility::translate('report.status.success', 'video_validator')
                 );
             } else {
-                $io->warning(
-                    $this->localizationUtility::translate('report.status.noVideos', 'video_validator')
-                );
+                $message = $this->localizationUtility::translate('report.status.noVideos', 'video_validator');
+                $io->warning($message);
+                $this->addFlashMessage($message, ContextualFeedbackSeverity::WARNING);
             }
         } else {
-            $io->warning(
-                $this->localizationUtility::translate('report.status.disallowedExtension', 'video_validator')
-            );
+            $message = $this->localizationUtility::translate('report.status.disallowedExtension', 'video_validator');
+            $io->warning($message);
+            $this->addFlashMessage($message, ContextualFeedbackSeverity::WARNING);
         }
 
         return Command::SUCCESS;
+    }
+
+    protected function addFlashMessage(string $message, ContextualFeedbackSeverity $type): void
+    {
+        if (!Environment::isCli()) {
+            $flashMessage = GeneralUtility::makeInstance(
+                FlashMessage::class,
+                $message,
+                '',
+                $type
+            );
+            $this->flashMessageService->getMessageQueueByIdentifier()->enqueue($flashMessage);
+        }
     }
 
     protected function getVideosByStatus(ValidatorDemand $validatorDemand, int $status): array

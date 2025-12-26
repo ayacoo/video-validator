@@ -20,7 +20,7 @@
 			</trans-unit>
 
 			<trans-unit id="report.validMailAddress" resname="report.validMailAddress">
-				<source>Please set a valid defaultMailFromAddress in the LocalConfiguration</source>
+				<source>Please set a valid $TYPO3_CONF_VARS['MAIL']['defaultMailFromAddress'] in the additional.php or settings.php</source>
 			</trans-unit>
 			<trans-unit id="report.status.success" resname="report.status.success">
 				<source>The video status mail was sent</source>
