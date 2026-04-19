@@ -9,3 +9,4 @@ services:
     resource: '../Classes/*'
     exclude:
       - '../Classes/Domain/Model/*'
+      - '../Classes/Event/*'

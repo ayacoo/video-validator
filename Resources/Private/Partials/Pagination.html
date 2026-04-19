@@ -1,0 +1,38 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:if condition="{pagination.lastPageNumber} > 1">
+    <nav aria-label="Pagination" class="video-validator-pagination">
+        <ul class="pagination">
+            <li class="page-item {f:if(condition: paginationUris.hasPrevious, else: 'disabled')}">
+                <a class="page-link" href="{paginationUris.first}">
+                    <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.pagination.first" default="First" />
+                </a>
+            </li>
+            <li class="page-item {f:if(condition: paginationUris.hasPrevious, else: 'disabled')}">
+                <a class="page-link" href="{paginationUris.previous}">
+                    <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.pagination.previous" default="Previous" />
+                </a>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">
+                    <f:translate
+                        key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.pagination.page"
+                        arguments="{0: paginator.currentPageNumber, 1: pagination.lastPageNumber}"
+                        default="Page {paginator.currentPageNumber} of {pagination.lastPageNumber}" />
+                </span>
+            </li>
+            <li class="page-item {f:if(condition: paginationUris.hasNext, else: 'disabled')}">
+                <a class="page-link" href="{paginationUris.next}">
+                    <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.pagination.next" default="Next" />
+                </a>
+            </li>
+            <li class="page-item {f:if(condition: paginationUris.hasNext, else: 'disabled')}">
+                <a class="page-link" href="{paginationUris.last}">
+                    <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.pagination.last" default="Last" />
+                </a>
+            </li>
+        </ul>
+    </nav>
+</f:if>
+</html>
