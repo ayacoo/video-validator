@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ayacoo\VideoValidator\Domain\Repository;
 
 use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
+use Doctrine\DBAL\Exception;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Platform\PlatformInformation;
@@ -138,8 +139,14 @@ class FileRepository
      * @param string $search case-insensitive title substring
      * @param array<int, string[]> $storageRestrictions storageUid => mount paths; empty = no restriction (admin)
      * @return array<int, array<string, mixed>>
+     * @throws Exception
      */
-    public function findVideosForModule(array $extensions, string $search, int $statusFilter = -1, array $storageRestrictions = []): array
+    public function findVideosForModule(
+        array $extensions,
+        string $search,
+        int $statusFilter = -1,
+        array $storageRestrictions = []
+    ): array
     {
         $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
 
@@ -163,7 +170,15 @@ class FileRepository
                     $queryBuilder->quoteIdentifier(self::SYS_FILE_TABLE . '.uid')
                 )
             )
-            ->where(...$this->buildModuleConstraints($queryBuilder, $extensions, $search, $statusFilter, $storageRestrictions))
+            ->where(
+                ...$this->buildModuleConstraints(
+                    $queryBuilder,
+                    $extensions,
+                    $search,
+                    $statusFilter,
+                    $storageRestrictions
+                )
+            )
             ->orderBy(self::SYS_FILE_TABLE . '.uid', 'DESC');
 
         return $statement->executeQuery()->fetchAllAssociative();
@@ -248,7 +263,10 @@ class FileRepository
      *
      * @param array<int, string[]> $storageRestrictions storageUid => mount paths
      */
-    protected function buildStorageConstraint(QueryBuilder $queryBuilder, array $storageRestrictions): CompositeExpression
+    protected function buildStorageConstraint(
+        QueryBuilder $queryBuilder,
+        array $storageRestrictions
+    ): CompositeExpression
     {
         $storageConstraints = [];
 

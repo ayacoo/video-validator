@@ -74,7 +74,12 @@ class VideoOverviewController
         $extensions = $extensionFilter !== '' ? [$extensionFilter] : $supportedExtensions;
 
         $storageRestrictions = $this->resolveStorageRestrictions();
-        $allRawVideos = $this->fileRepository->findVideosForModule($extensions, $search, $statusFilter, $storageRestrictions);
+        $allRawVideos = $this->fileRepository->findVideosForModule(
+            $extensions,
+            $search,
+            $statusFilter,
+            $storageRestrictions
+        );
 
         $paginator = new ArrayPaginator($allRawVideos, $currentPage, self::ITEMS_PER_PAGE);
         $pagination = new SimplePagination($paginator);
@@ -202,12 +207,12 @@ class VideoOverviewController
     {
         foreach ($rawVideos as $key => $row) {
             $extension = strtolower((string)($row['extension'] ?? ''));
-            $publicUrl = '';
             try {
                 $file = $this->resourceFactory->getFileObject((int)$row['uid']);
                 $publicUrl = $file->getPublicUrl();
             } catch (FileDoesNotExistException) {
                 // ignore — file may have been removed meanwhile
+                $publicUrl = '';
             }
             $rawVideos[$key]['public_url'] = $publicUrl;
             $rawVideos[$key]['is_invalid'] = (int)($row['validation_status'] ?? 0) === VideoService::STATUS_ERROR;
