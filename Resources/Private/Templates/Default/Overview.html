@@ -36,7 +36,7 @@
                         <f:for each="{videos}" as="video">
                             <tr class="{f:if(condition: video.is_invalid, then: 'table-danger')}">
                                 <td>
-                                    <core:icon identifier="{video.icon_identifier}" size="small" />
+                                    <core:icon identifier="{video.icon_identifier}" size="medium" />
                                 </td>
                                 <td>{video.uid}</td>
                                 <td>
@@ -78,6 +78,15 @@
                                     </f:if>
                                 </td>
                                 <td class="col-control nowrap">
+                                    <f:if condition="{video.has_validator}">
+                                        <button type="button"
+                                                class="btn btn-default btn-sm video-validator-refresh"
+                                                data-file-uid="{video.uid}"
+                                                title="{f:translate(key: 'LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.action.refresh', default: 'Refresh status')}">
+                                            <core:icon identifier="actions-refresh" size="small" />
+                                            <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.action.refresh" default="Refresh status" />
+                                        </button>
+                                    </f:if>
                                     <f:if condition="{video.metadata_uid}">
                                         <be:link.editRecord table="sys_file_metadata" uid="{video.metadata_uid}" class="btn btn-default btn-sm">
                                             <core:icon identifier="actions-open" size="small" />

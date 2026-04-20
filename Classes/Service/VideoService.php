@@ -44,6 +44,57 @@ class VideoService
         $this->io = $io;
     }
 
+    /**
+     * Returns whether a validator is registered for the given file extension.
+     * Takes ModifyValidatorEvent into account, so extensions that plug in
+     * validators dynamically are also detected.
+     */
+    public function hasValidator(string $extension): bool
+    {
+        $demand = new ValidatorDemand();
+        $demand->setExtension($extension);
+        return $this->getValidator($demand) !== null;
+    }
+
+    /**
+     * Validates a single file by its uid and persists the result.
+     * Used by the backend "Refresh status" action. Reuses the existing validator lookup,
+     * file repository, and ModifyVideoValidateEvent dispatch — no CLI I/O.
+     *
+     * @return int One of STATUS_SUCCESS, STATUS_ERROR
+     * @throws \RuntimeException if no validator is registered for the file's extension
+     * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException if the file does not exist
+     */
+    public function validateFile(int $fileUid): int
+    {
+        $file = $this->resourceFactory->getFileObject($fileUid);
+
+        $demand = new ValidatorDemand();
+        $demand->setExtension(strtolower($file->getExtension()));
+        $validator = $this->getValidator($demand);
+        if ($validator === null) {
+            throw new \RuntimeException(
+                sprintf('No validator registered for extension "%s"', $file->getExtension())
+            );
+        }
+
+        $mediaId = $validator->getOnlineMediaId($file) ?? '';
+        if ($mediaId === '' || !$validator->isVideoOnline($mediaId)) {
+            $status = self::STATUS_ERROR;
+        } else {
+            $status = self::STATUS_SUCCESS;
+        }
+
+        $properties = [
+            'validation_status' => $status,
+            'validation_date' => time(),
+        ];
+        $this->fileRepository->updatePropertiesByFile($fileUid, $properties);
+        $this->eventDispatcher->dispatch(new ModifyVideoValidateEvent($file, $properties));
+
+        return $status;
+    }
+
     public function validate(ValidatorDemand $validatorDemand): void
     {
         $validator = $this->getValidator($validatorDemand);

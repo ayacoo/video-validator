@@ -44,6 +44,7 @@ class VideoOverviewController
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly FileRepository $fileRepository,
         private readonly ResourceFactory $resourceFactory,
+        private readonly VideoService $videoService,
     ) {
     }
 
@@ -205,6 +206,7 @@ class VideoOverviewController
      */
     private function enrichVideos(array $rawVideos, array $iconMap = []): array
     {
+        $hasValidatorCache = [];
         foreach ($rawVideos as $key => $row) {
             $extension = strtolower((string)($row['extension'] ?? ''));
             try {
@@ -214,9 +216,14 @@ class VideoOverviewController
                 // ignore — file may have been removed meanwhile
                 $publicUrl = '';
             }
+            if (!array_key_exists($extension, $hasValidatorCache)) {
+                $hasValidatorCache[$extension] = $extension !== ''
+                    && $this->videoService->hasValidator($extension);
+            }
             $rawVideos[$key]['public_url'] = $publicUrl;
             $rawVideos[$key]['is_invalid'] = (int)($row['validation_status'] ?? 0) === VideoService::STATUS_ERROR;
             $rawVideos[$key]['icon_identifier'] = $iconMap[$extension] ?? 'mimetypes-media-video';
+            $rawVideos[$key]['has_validator'] = $hasValidatorCache[$extension];
         }
 
         return $rawVideos;

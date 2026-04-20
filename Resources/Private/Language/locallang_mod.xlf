@@ -24,7 +24,7 @@
 			</trans-unit>
 
 			<trans-unit id="mod.filter.extension" resname="mod.filter.extension">
-				<source>Extension</source>
+				<source>File extension</source>
 			</trans-unit>
 			<trans-unit id="mod.filter.all" resname="mod.filter.all">
 				<source>All</source>
@@ -88,6 +88,21 @@
 			</trans-unit>
 			<trans-unit id="mod.action.show" resname="mod.action.show">
 				<source>Show</source>
+			</trans-unit>
+			<trans-unit id="mod.action.refresh" resname="mod.action.refresh">
+				<source>Refresh status</source>
+			</trans-unit>
+			<trans-unit id="mod.action.refresh.success.title" resname="mod.action.refresh.success.title">
+				<source>Status refreshed</source>
+			</trans-unit>
+			<trans-unit id="mod.action.refresh.success.message" resname="mod.action.refresh.success.message">
+				<source>The video status has been updated.</source>
+			</trans-unit>
+			<trans-unit id="mod.action.refresh.error.title" resname="mod.action.refresh.error.title">
+				<source>Refresh failed</source>
+			</trans-unit>
+			<trans-unit id="mod.action.refresh.error.message" resname="mod.action.refresh.error.message">
+				<source>The video status could not be refreshed.</source>
 			</trans-unit>
 
 			<trans-unit id="mod.pagination.first" resname="mod.pagination.first">
