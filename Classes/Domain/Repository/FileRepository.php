@@ -269,7 +269,7 @@ class FileRepository
             foreach ($paths as $path) {
                 $pathConstraints[] = $queryBuilder->expr()->like(
                     self::SYS_FILE_TABLE . '.identifier',
-                    $queryBuilder->createNamedParameter($path . '%')
+                    $queryBuilder->createNamedParameter($queryBuilder->escapeLikeWildcards($path) . '%')
                 );
             }
 
