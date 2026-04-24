@@ -64,7 +64,7 @@ class VideoService
      *
      * @param int $fileUid
      * @return int One of STATUS_SUCCESS, STATUS_ERROR
-     * @throws FileDoesNotExistException if the file does not exist
+     * @throws FileDoesNotExistException|\RuntimeException
      */
     public function validateFile(int $fileUid): int
     {
