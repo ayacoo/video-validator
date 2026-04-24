@@ -146,8 +146,7 @@ class FileRepository
         string $search,
         int $statusFilter = -1,
         array $storageRestrictions = []
-    ): array
-    {
+    ): array {
         $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
 
         $statement = $queryBuilder
@@ -186,6 +185,7 @@ class FileRepository
 
     /**
      * @param string[] $extensions
+     * @throws Exception
      */
     public function countVideosForModule(array $extensions, string $search): int
     {
@@ -266,8 +266,7 @@ class FileRepository
     protected function buildStorageConstraint(
         QueryBuilder $queryBuilder,
         array $storageRestrictions
-    ): CompositeExpression
-    {
+    ): CompositeExpression {
         $storageConstraints = [];
 
         foreach ($storageRestrictions as $storageUid => $paths) {

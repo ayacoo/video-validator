@@ -42,9 +42,7 @@ class VideoRefreshAjaxController
         if ($backendUser === null) {
             return new JsonResponse(['success' => false, 'message' => 'Not authenticated'], 401);
         }
-        if (!$backendUser->isAdmin()
-            && !isset($backendUser->getFileStorages()[$file->getStorage()->getUid()])
-        ) {
+        if (!$backendUser->isAdmin() && !isset($backendUser->getFileStorages()[$file->getStorage()->getUid()])) {
             return new JsonResponse(['success' => false, 'message' => 'Access denied'], 403);
         }
 

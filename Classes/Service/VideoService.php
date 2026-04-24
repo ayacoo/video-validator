@@ -12,6 +12,7 @@ use Ayacoo\VideoValidator\Service\Validator\AbstractVideoValidatorInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
@@ -61,9 +62,9 @@ class VideoService
      * Used by the backend "Refresh status" action. Reuses the existing validator lookup,
      * file repository, and ModifyVideoValidateEvent dispatch — no CLI I/O.
      *
+     * @param int $fileUid
      * @return int One of STATUS_SUCCESS, STATUS_ERROR
-     * @throws \RuntimeException if no validator is registered for the file's extension
-     * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException if the file does not exist
+     * @throws FileDoesNotExistException if the file does not exist
      */
     public function validateFile(int $fileUid): int
     {
