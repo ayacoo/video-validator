@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+	<file source-language="en" datatype="plaintext" original="EXT:video_validator/Resources/Private/Language/locallang_mod.xlf" date="2026-04-19T12:00:00Z" product-name="video_validator">
+		<header/>
+		<body>
+			<trans-unit id="mlang_tabs_tab" resname="mlang_tabs_tab">
+				<source>Video Validator</source>
+			</trans-unit>
+			<trans-unit id="mlang_labels_tabdescr" resname="mlang_labels_tabdescr">
+				<source>Overview of YouTube and Vimeo videos and their validation status.</source>
+			</trans-unit>
+			<trans-unit id="mlang_labels_tablabel" resname="mlang_labels_tablabel">
+				<source>Online video overview</source>
+			</trans-unit>
+
+			<trans-unit id="mod.title" resname="mod.title">
+				<source>Video Validator</source>
+			</trans-unit>
+			<trans-unit id="mod.totalCount" resname="mod.totalCount">
+				<source>%s video(s) found</source>
+			</trans-unit>
+			<trans-unit id="mod.noResults" resname="mod.noResults">
+				<source>No videos found.</source>
+			</trans-unit>
+
+			<trans-unit id="mod.filter.extension" resname="mod.filter.extension">
+				<source>File extension</source>
+			</trans-unit>
+			<trans-unit id="mod.filter.all" resname="mod.filter.all">
+				<source>All</source>
+			</trans-unit>
+			<trans-unit id="mod.filter.search" resname="mod.filter.search">
+				<source>Search title</source>
+			</trans-unit>
+			<trans-unit id="mod.filter.search.placeholder" resname="mod.filter.search.placeholder">
+				<source>Search in title</source>
+			</trans-unit>
+			<trans-unit id="mod.filter.submit" resname="mod.filter.submit">
+				<source>Apply filter</source>
+			</trans-unit>
+			<trans-unit id="mod.filter.reset" resname="mod.filter.reset">
+				<source>Reset</source>
+			</trans-unit>
+			<trans-unit id="mod.filter.status" resname="mod.filter.status">
+				<source>Status</source>
+			</trans-unit>
+			<trans-unit id="mod.filter.status.all" resname="mod.filter.status.all">
+				<source>All statuses</source>
+			</trans-unit>
+
+			<trans-unit id="mod.table.icon" resname="mod.table.icon">
+				<source></source>
+			</trans-unit>
+			<trans-unit id="mod.table.uid" resname="mod.table.uid">
+				<source>UID</source>
+			</trans-unit>
+			<trans-unit id="mod.table.extension" resname="mod.table.extension">
+				<source>Extension</source>
+			</trans-unit>
+			<trans-unit id="mod.table.title" resname="mod.table.title">
+				<source>Title</source>
+			</trans-unit>
+			<trans-unit id="mod.table.status" resname="mod.table.status">
+				<source>Status</source>
+			</trans-unit>
+			<trans-unit id="mod.table.actions" resname="mod.table.actions">
+				<source>Actions</source>
+			</trans-unit>
+			<trans-unit id="mod.table.noTitle" resname="mod.table.noTitle">
+				<source>[no title]</source>
+			</trans-unit>
+
+			<trans-unit id="mod.status.invalid" resname="mod.status.invalid">
+				<source>Invalid</source>
+			</trans-unit>
+			<trans-unit id="mod.status.valid" resname="mod.status.valid">
+				<source>Valid</source>
+			</trans-unit>
+			<trans-unit id="mod.status.unknown" resname="mod.status.unknown">
+				<source>Not validated</source>
+			</trans-unit>
+			<trans-unit id="mod.status.skip" resname="mod.status.skip">
+				<source>Skipped</source>
+			</trans-unit>
+
+			<trans-unit id="mod.action.editMetadata" resname="mod.action.editMetadata">
+				<source>Edit metadata</source>
+			</trans-unit>
+			<trans-unit id="mod.action.show" resname="mod.action.show">
+				<source>Show</source>
+			</trans-unit>
+			<trans-unit id="mod.action.refresh" resname="mod.action.refresh">
+				<source>Refresh status</source>
+			</trans-unit>
+			<trans-unit id="mod.action.refresh.success.title" resname="mod.action.refresh.success.title">
+				<source>Status refreshed</source>
+			</trans-unit>
+			<trans-unit id="mod.action.refresh.success.message" resname="mod.action.refresh.success.message">
+				<source>The video status has been updated.</source>
+			</trans-unit>
+			<trans-unit id="mod.action.refresh.error.title" resname="mod.action.refresh.error.title">
+				<source>Refresh failed</source>
+			</trans-unit>
+			<trans-unit id="mod.action.refresh.error.message" resname="mod.action.refresh.error.message">
+				<source>The video status could not be refreshed.</source>
+			</trans-unit>
+
+			<trans-unit id="mod.pagination.first" resname="mod.pagination.first">
+				<source>First</source>
+			</trans-unit>
+			<trans-unit id="mod.pagination.previous" resname="mod.pagination.previous">
+				<source>Previous</source>
+			</trans-unit>
+			<trans-unit id="mod.pagination.next" resname="mod.pagination.next">
+				<source>Next</source>
+			</trans-unit>
+			<trans-unit id="mod.pagination.last" resname="mod.pagination.last">
+				<source>Last</source>
+			</trans-unit>
+			<trans-unit id="mod.pagination.page" resname="mod.pagination.page">
+				<source>Page %s of %s</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

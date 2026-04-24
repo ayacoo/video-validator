@@ -1,0 +1,120 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+      xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:asset.module identifier="@ayacoo/video-validator/backend/video-overview.js" />
+
+<div class="module-docheader">
+    <h1><f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.title" default="Video Validator" /></h1>
+</div>
+
+<div class="module-body">
+    <f:render partial="FilterForm" arguments="{_all}" />
+
+    <f:if condition="{totalCount} > 0">
+        <f:then>
+            <p class="text-muted">
+                <f:translate
+                    key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.totalCount"
+                    arguments="{0: totalCount}"
+                    default="{totalCount} video(s) found" />
+            </p>
+
+            <div class="table-fit">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th><f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.table.icon" default="" /></th>
+                            <th><f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.table.uid" default="UID" /></th>
+                            <th><f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.table.title" default="Title" /></th>
+                            <th><f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.table.status" default="Status" /></th>
+                            <th class="col-control"><f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.table.actions" default="Actions" /></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <f:for each="{videos}" as="video">
+                            <tr class="{f:if(condition: video.is_invalid, then: 'table-danger')}">
+                                <td>
+                                    <core:icon identifier="{video.icon_identifier}" size="medium" />
+                                </td>
+                                <td>{video.uid}</td>
+                                <td>
+                                    <f:if condition="{video.title}">
+                                        <f:then>{video.title}</f:then>
+                                        <f:else><em class="text-muted"><f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.table.noTitle" default="[no title]" /></em></f:else>
+                                    </f:if>
+                                </td>
+                                <td>
+                                    <f:if condition="{video.validation_status} == 200">
+                                        <f:then>
+                                            <span class="badge badge-success">
+                                                <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.status.valid" default="Valid" />
+                                            </span>
+                                        </f:then>
+                                        <f:else>
+                                            <f:if condition="{video.validation_status} == 404">
+                                                <f:then>
+                                                    <span class="badge badge-danger">
+                                                        <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.status.invalid" default="Invalid" />
+                                                    </span>
+                                                </f:then>
+                                                <f:else>
+                                                    <f:if condition="{video.validation_status} == 410">
+                                                        <f:then>
+                                                            <span class="badge badge-warning">
+                                                                <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.status.skip" default="Skipped" />
+                                                            </span>
+                                                        </f:then>
+                                                        <f:else>
+                                                            <span class="badge badge-secondary">
+                                                                <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.status.unknown" default="Not validated" />
+                                                            </span>
+                                                        </f:else>
+                                                    </f:if>
+                                                </f:else>
+                                            </f:if>
+                                        </f:else>
+                                    </f:if>
+                                </td>
+                                <td class="col-control nowrap">
+                                    <f:if condition="{video.has_validator}">
+                                        <button type="button"
+                                                class="btn btn-default btn-sm video-validator-refresh"
+                                                data-file-uid="{video.uid}"
+                                                title="{f:translate(key: 'LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.action.refresh', default: 'Refresh status')}">
+                                            <core:icon identifier="actions-refresh" size="small" />
+                                            <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.action.refresh" default="Refresh status" />
+                                        </button>
+                                    </f:if>
+                                    <f:if condition="{video.metadata_uid}">
+                                        <be:link.editRecord table="sys_file_metadata" uid="{video.metadata_uid}" class="btn btn-default btn-sm">
+                                            <core:icon identifier="actions-open" size="small" />
+                                            <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.action.editMetadata" default="Edit metadata" />
+                                        </be:link.editRecord>
+                                    </f:if>
+                                    <f:if condition="{video.public_url}">
+                                        <a href="{video.public_url}" target="_blank" rel="noopener noreferrer" class="btn btn-default btn-sm">
+                                            <core:icon identifier="actions-view" size="small" />
+                                            <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.action.show" default="Show" />
+                                        </a>
+                                    </f:if>
+                                </td>
+                            </tr>
+                        </f:for>
+                    </tbody>
+                </table>
+            </div>
+
+            <f:render partial="Pagination" arguments="{_all}" />
+        </f:then>
+        <f:else>
+            <div class="callout callout-info">
+                <div class="callout-body">
+                    <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.noResults" default="No videos found." />
+                </div>
+            </div>
+        </f:else>
+    </f:if>
+</div>
+</html>

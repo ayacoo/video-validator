@@ -9,12 +9,11 @@ use Ayacoo\VideoValidator\Domain\Repository\FileRepository;
 use Ayacoo\VideoValidator\Event\ModifyValidatorEvent;
 use Ayacoo\VideoValidator\Event\ModifyVideoValidateEvent;
 use Ayacoo\VideoValidator\Service\Validator\AbstractVideoValidatorInterface;
-use Ayacoo\VideoValidator\Service\Validator\VimeoValidator;
-use Ayacoo\VideoValidator\Service\Validator\YoutubeValidator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 class VideoService
@@ -30,6 +29,8 @@ class VideoService
         private readonly FileRepository $fileRepository,
         private readonly ResourceFactory $resourceFactory,
         private readonly LocalizationUtility $localizationUtility,
+        #[AutowireIterator('video_validator.validator', indexAttribute: 'extension')]
+        private readonly iterable $validator,
         private ?SymfonyStyle $io = null,
     ) {
     }
@@ -42,6 +43,57 @@ class VideoService
     public function setIo(?SymfonyStyle $io): void
     {
         $this->io = $io;
+    }
+
+    /**
+     * Returns whether a validator is registered for the given file extension.
+     * Takes ModifyValidatorEvent into account, so extensions that plug in
+     * validators dynamically are also detected.
+     */
+    public function hasValidator(string $extension): bool
+    {
+        $demand = new ValidatorDemand();
+        $demand->setExtension($extension);
+        return $this->getValidator($demand) !== null;
+    }
+
+    /**
+     * Validates a single file by its uid and persists the result.
+     * Used by the backend "Refresh status" action. Reuses the existing validator lookup,
+     * file repository, and ModifyVideoValidateEvent dispatch — no CLI I/O.
+     *
+     * @param int $fileUid
+     * @return int One of STATUS_SUCCESS, STATUS_ERROR
+     * @throws FileDoesNotExistException|\RuntimeException
+     */
+    public function validateFile(int $fileUid): int
+    {
+        $file = $this->resourceFactory->getFileObject($fileUid);
+
+        $demand = new ValidatorDemand();
+        $demand->setExtension(strtolower($file->getExtension()));
+        $validator = $this->getValidator($demand);
+        if ($validator === null) {
+            throw new \RuntimeException(
+                sprintf('No validator registered for extension "%s"', $file->getExtension())
+            );
+        }
+
+        $mediaId = $validator->getOnlineMediaId($file) ?? '';
+        if ($mediaId === '' || !$validator->isVideoOnline($mediaId)) {
+            $status = self::STATUS_ERROR;
+        } else {
+            $status = self::STATUS_SUCCESS;
+        }
+
+        $properties = [
+            'validation_status' => $status,
+            'validation_date' => time(),
+        ];
+        $this->fileRepository->updatePropertiesByFile($fileUid, $properties);
+        $this->eventDispatcher->dispatch(new ModifyVideoValidateEvent($file, $properties));
+
+        return $status;
     }
 
     public function validate(ValidatorDemand $validatorDemand): void
@@ -152,10 +204,13 @@ class VideoService
     protected function getValidator(ValidatorDemand $validatorDemand): ?AbstractVideoValidatorInterface
     {
         $extension = strtolower($validatorDemand->getExtension());
-        $validator = match ($extension) {
-            'youtube' => GeneralUtility::makeInstance(YoutubeValidator::class, $extension),
-            'vimeo' => GeneralUtility::makeInstance(VimeoValidator::class, $extension)
-        };
+        $validator = null;
+        foreach ($this->validator as $validatorKey => $currentValidator) {
+            if ($validatorKey === $extension) {
+                $validator = $currentValidator;
+                break;
+            }
+        }
 
         $modifyValidatorEvent = $this->eventDispatcher->dispatch(
             new ModifyValidatorEvent($validator, $extension)

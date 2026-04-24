@@ -6,6 +6,7 @@ namespace Ayacoo\VideoValidator\Command;
 
 use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
 use Ayacoo\VideoValidator\Service\VideoService;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -13,11 +14,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
+#[AsCommand('videoValidator:validate', 'Video validation of a defined media extension (e.g. YouTube)')]
 class ValidatorCommand extends Command
 {
     protected function configure(): void
     {
-        $this->setDescription('Video validation of a defined media extension (e.g. YouTube)');
         $this->addOption(
             'extension',
             null,

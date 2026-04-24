@@ -1,0 +1,55 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<form id="video-validator-filter" action="{moduleBaseUri}" method="get" class="w-100 mb-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-3">
+                <label class="form-label" for="video-validator-extension">
+                    <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.filter.extension" default="Extension" />
+                </label>
+                <select id="video-validator-extension" name="extension" class="form-select">
+                    <option value="">
+                        <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.filter.all" default="All" />
+                    </option>
+                    <f:for each="{availableExtensions}" as="ext">
+                        <option value="{ext}" {f:if(condition: '{extensionFilter} == {ext}', then: 'selected="selected"')}>{ext}</option>
+                    </f:for>
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label" for="video-validator-status">
+                    <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.filter.status" default="Status" />
+                </label>
+                <select id="video-validator-status" name="status" class="form-select">
+                    <option value="-1" {f:if(condition: '{statusFilter} == -1', then: 'selected="selected"')}>
+                        <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.filter.status.all" default="All statuses" />
+                    </option>
+                    <option value="200" {f:if(condition: '{statusFilter} == 200', then: 'selected="selected"')}>
+                        <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.status.valid" default="Valid" />
+                    </option>
+                    <option value="404" {f:if(condition: '{statusFilter} == 404', then: 'selected="selected"')}>
+                        <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.status.invalid" default="Invalid" />
+                    </option>
+                    <option value="410" {f:if(condition: '{statusFilter} == 410', then: 'selected="selected"')}>
+                        <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.status.skip" default="Skipped" />
+                    </option>
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label" for="video-validator-search">
+                    <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.filter.search" default="Search title" />
+                </label>
+                <input type="text" id="video-validator-search" name="search" value="{search}" class="form-control"
+                       placeholder="{f:translate(key: 'LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.filter.search.placeholder', default: 'Search in title')}" />
+            </div>
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.filter.submit" default="Apply filter" />
+                </button>
+                <a id="video-validator-reset" href="{moduleBaseUri}" class="btn btn-default">
+                    <f:translate key="LLL:EXT:video_validator/Resources/Private/Language/locallang_mod.xlf:mod.filter.reset" default="Reset" />
+                </a>
+            </div>
+        </div>
+</form>
+</html>

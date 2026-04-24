@@ -80,9 +80,10 @@ you can take care of the corresponding corrections.
 
 | Version | TYPO3       | PHP       | Support / Development                |
 |---------|-------------|-----------|--------------------------------------|
-| 4.x     | 13.x        | 8.2 - 8.5 | features, bugfixes, security updates |
+| 5.x     | 14.x        | 8.2 - 8.5 | features, bugfixes, security updates |
+| 4.x     | 13.x        | 8.2 - 8.5 | bugfixes, security updates           |
 | 3.x     | 12.x        | 8.1 - 8.4 | bugfixes, security updates           |
-| 2.x     | 10.x - 11.x | 7.4 - 8.0 | bugfixes, security updates           |
+| 2.x     | 10.x - 11.x | 7.4 - 8.0 | no support anymore                   |
 
 Hint: Version 1 users should update to version 2
 
@@ -439,7 +440,60 @@ class VideoValidateListener
 
 ```
 
-### 5.5 Email settings
+### 5.5 Extend the backend video overview with custom media extensions
+
+The backend module shows YouTube and Vimeo videos by default. You can add
+further media extensions to the overview — and to the extension filter — via the
+`ModifyVideoOverviewExtensionsEvent`.
+
+**Security note:** Only extensions that are registered
+in `$GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['onlineMediaHelpers']` are
+accepted. Calling `addExtension()` with an unknown extension is silently ignored.
+
+#### EventListener registration
+
+```yaml
+services:
+  Extension\Namespace\Listener\VideoOverviewExtensionsListener:
+    tags:
+      - name: event.listener
+        identifier: 'extensionkey/videoOverviewExtensions'
+        event: Ayacoo\VideoValidator\Event\ModifyVideoOverviewExtensionsEvent
+```
+
+#### EventListener
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Extension\Namespace\Listener;
+
+use Ayacoo\VideoValidator\Event\ModifyVideoOverviewExtensionsEvent;
+
+class VideoOverviewExtensionsListener
+{
+    public function __invoke(ModifyVideoOverviewExtensionsEvent $event): void
+    {
+        // Only extensions registered in onlineMediaHelpers are accepted.
+        // Use getAllowedExtensions() to inspect what is available on this system.
+        // The second argument is the TYPO3 icon identifier shown in the table.
+        $event->addExtension('tiktok', 'mimetypes-media-video-tiktok');
+    }
+}
+```
+
+The event provides the following API:
+
+| Method | Description |
+|---|---|
+| `getExtensions(): array` | Returns the current list of extensions shown in the module |
+| `getAllowedExtensions(): array` | Returns all extensions registered in `onlineMediaHelpers` |
+| `getIconMap(): array` | Returns a map of `extension => icon identifier` for all registered extensions |
+| `addExtension(string $extension, string $iconIdentifier = 'mimetypes-media-video'): void` | Adds an extension with its icon; silently ignored if not in `onlineMediaHelpers` |
+
+### 5.6 Email settings
 
 To define a sender for the email, the
 configuration ```$GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress']```

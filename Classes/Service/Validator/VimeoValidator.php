@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Ayacoo\VideoValidator\Service\Validator;
 
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\VimeoHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+#[AutoconfigureTag('video_validator.validator', ['extension' => 'vimeo'])]
 class VimeoValidator extends AbstractVideoValidator
 {
     private VimeoHelper $vimeoHelper;

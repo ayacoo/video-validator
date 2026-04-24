@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Ayacoo\VideoValidator\Domain\Repository;
 
 use Ayacoo\VideoValidator\Domain\Dto\ValidatorDemand;
+use Doctrine\DBAL\Exception;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Platform\PlatformInformation;
+use TYPO3\CMS\Core\Database\Query\Expression\CompositeExpression;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -127,6 +129,174 @@ class FileRepository
         $queryBuilder->set('validation_date', 0);
         $queryBuilder->set('validation_status', 0);
         $queryBuilder->executeStatement();
+    }
+
+    /**
+     * Fetch videos (YouTube/Vimeo) for the backend overview module.
+     * Joins sys_file_metadata so the resulting rows carry the metadata uid for edit links.
+     *
+     * @param string[] $extensions lowercase sys_file.extension values to include
+     * @param string $search case-insensitive title substring
+     * @param array<int, string[]> $storageRestrictions storageUid => mount paths; empty = no restriction (admin)
+     * @return array<int, array<string, mixed>>
+     * @throws Exception
+     */
+    public function findVideosForModule(
+        array $extensions,
+        string $search,
+        int $statusFilter = -1,
+        array $storageRestrictions = []
+    ): array {
+        $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
+
+        $statement = $queryBuilder
+            ->select(
+                self::SYS_FILE_TABLE . '.uid',
+                self::SYS_FILE_TABLE . '.extension',
+                self::SYS_FILE_TABLE . '.identifier',
+                self::SYS_FILE_TABLE . '.validation_status',
+                self::SYS_FILE_TABLE . '.validation_date',
+                'sys_file_metadata.uid AS metadata_uid',
+                'sys_file_metadata.title AS title',
+            )
+            ->from(self::SYS_FILE_TABLE)
+            ->leftJoin(
+                self::SYS_FILE_TABLE,
+                'sys_file_metadata',
+                'sys_file_metadata',
+                $queryBuilder->expr()->eq(
+                    'sys_file_metadata.file',
+                    $queryBuilder->quoteIdentifier(self::SYS_FILE_TABLE . '.uid')
+                )
+            )
+            ->where(
+                ...$this->buildModuleConstraints(
+                    $queryBuilder,
+                    $extensions,
+                    $search,
+                    $statusFilter,
+                    $storageRestrictions
+                )
+            )
+            ->orderBy(self::SYS_FILE_TABLE . '.uid', 'DESC');
+
+        return $statement->executeQuery()->fetchAllAssociative();
+    }
+
+    /**
+     * @param string[] $extensions
+     * @throws Exception
+     */
+    public function countVideosForModule(array $extensions, string $search): int
+    {
+        $queryBuilder = $this->getQueryBuilder(self::SYS_FILE_TABLE);
+
+        $statement = $queryBuilder
+            ->count(self::SYS_FILE_TABLE . '.uid')
+            ->from(self::SYS_FILE_TABLE)
+            ->leftJoin(
+                self::SYS_FILE_TABLE,
+                'sys_file_metadata',
+                'sys_file_metadata',
+                $queryBuilder->expr()->eq(
+                    'sys_file_metadata.file',
+                    $queryBuilder->quoteIdentifier(self::SYS_FILE_TABLE . '.uid')
+                )
+            )
+            ->where(...$this->buildModuleConstraints($queryBuilder, $extensions, $search));
+
+        return (int)$statement->executeQuery()->fetchOne();
+    }
+
+    /**
+     * @param string[] $extensions
+     * @param array<int, string[]> $storageRestrictions storageUid => mount paths; empty = no restriction
+     * @return array<int, \TYPO3\CMS\Core\Database\Query\Expression\CompositeExpression|string>
+     */
+    protected function buildModuleConstraints(
+        QueryBuilder $queryBuilder,
+        array $extensions,
+        string $search,
+        int $statusFilter = -1,
+        array $storageRestrictions = [],
+    ): array {
+        $constraints = [];
+
+        $normalizedExtensions = array_values(array_filter(array_map('strtolower', $extensions)));
+        if ($normalizedExtensions !== []) {
+            $constraints[] = $queryBuilder->expr()->in(
+                self::SYS_FILE_TABLE . '.extension',
+                $queryBuilder->createNamedParameter($normalizedExtensions, Connection::PARAM_STR_ARRAY)
+            );
+        }
+
+        $constraints[] = $queryBuilder->expr()->eq(
+            self::SYS_FILE_TABLE . '.missing',
+            $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)
+        );
+
+        if ($statusFilter >= 0) {
+            $constraints[] = $queryBuilder->expr()->eq(
+                self::SYS_FILE_TABLE . '.validation_status',
+                $queryBuilder->createNamedParameter($statusFilter, Connection::PARAM_INT)
+            );
+        }
+
+        $search = trim($search);
+        if ($search !== '') {
+            $constraints[] = $queryBuilder->expr()->like(
+                'sys_file_metadata.title',
+                $queryBuilder->createNamedParameter('%' . $queryBuilder->escapeLikeWildcards($search) . '%')
+            );
+        }
+
+        if ($storageRestrictions !== []) {
+            $constraints[] = $this->buildStorageConstraint($queryBuilder, $storageRestrictions);
+        }
+
+        return $constraints;
+    }
+
+    /**
+     * Builds an OR constraint covering all accessible storages and their file mount paths.
+     * A path of "/" means the user has access to the entire storage (no path filter needed).
+     *
+     * @param array<int, string[]> $storageRestrictions storageUid => mount paths
+     */
+    protected function buildStorageConstraint(
+        QueryBuilder $queryBuilder,
+        array $storageRestrictions
+    ): CompositeExpression {
+        $storageConstraints = [];
+
+        foreach ($storageRestrictions as $storageUid => $paths) {
+            $storageEq = $queryBuilder->expr()->eq(
+                self::SYS_FILE_TABLE . '.storage',
+                $queryBuilder->createNamedParameter($storageUid, Connection::PARAM_INT)
+            );
+
+            $hasRootMount = in_array('/', $paths, true);
+            if ($hasRootMount || $paths === []) {
+                // Full storage access — no path restriction needed
+                $storageConstraints[] = $storageEq;
+                continue;
+            }
+
+            $pathConstraints = [];
+            foreach ($paths as $path) {
+                $pathConstraints[] = $queryBuilder->expr()->like(
+                    self::SYS_FILE_TABLE . '.identifier',
+                    $queryBuilder->createNamedParameter($queryBuilder->escapeLikeWildcards($path) . '%')
+                );
+            }
+
+            $storageConstraints[] = $queryBuilder->expr()->and(
+                $storageEq,
+                $queryBuilder->expr()->or(...$pathConstraints)
+            );
+        }
+
+        return $queryBuilder->expr()->or(...$storageConstraints);
     }
 
     public function updatePropertiesByFile(int $fileUid, array $properties = []): void
